@@ -2,21 +2,22 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <title>Hitung Patungan dari Foto Struk</title>
+  <title>Hitung Patungan dari Foto Struk (Debug)</title>
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.0.2/dist/tesseract.min.js"></script>
   <style>
     body { font-family: sans-serif; padding: 20px; max-width: 600px; margin: auto; }
     input, button { margin-top: 10px; display: block; width: 100%; }
-    #result { margin-top: 20px; font-weight: bold; white-space: pre-line; }
+    #result, #ocrText { margin-top: 20px; white-space: pre-line; }
+    #result { font-weight: bold; }
     img { max-width: 100%; margin-top: 10px; }
+    textarea { width: 100%; height: 150px; margin-top: 10px; font-family: monospace; }
   </style>
 </head>
 <body>
-  <h2>Hitung Patungan dari Foto Struk</h2>
+  <h2>Hitung Patungan dari Foto Struk (Debug)</h2>
 
   <label>Upload Foto Struk (.jpg/.png):</label>
   <input type="file" id="imageInput" accept="image/*" />
-
   <img id="preview" src="" alt="Preview" />
 
   <label>Jumlah Orang Patungan:</label>
@@ -25,6 +26,8 @@
   <button onclick="processImage()">Hitung Patungan</button>
 
   <div id="result"></div>
+  <label>Hasil OCR (mentah):</label>
+  <textarea id="ocrText" readonly></textarea>
 
   <script>
     const preview = document.getElementById("preview");
@@ -40,6 +43,7 @@
       const image = document.getElementById("imageInput").files[0];
       const numPeople = parseInt(document.getElementById("numPeople").value);
       const resultDiv = document.getElementById("result");
+      const ocrTextArea = document.getElementById("ocrText");
 
       if (!image || isNaN(numPeople) || numPeople <= 0) {
         resultDiv.innerText = "Mohon upload foto dan jumlah orang.";
@@ -47,13 +51,14 @@
       }
 
       resultDiv.innerText = "Membaca struk dari foto...";
+      ocrTextArea.value = "";
 
       Tesseract.recognize(image, 'ind', {
         logger: m => console.log(m)
       }).then(({ data: { text } }) => {
-        console.log("OCR Output:", text);
+        ocrTextArea.value = text;
 
-        const match = text.match(/total\s*[:\-]?\s*([\d.,]+)/i);
+        const match = text.match(/total\\s*[:\\-]?\\s*([\\d.,]+)/i);
         if (match) {
           let total = match[1].replace('.', '').replace(',', '.');
           total = parseFloat(total);
@@ -66,7 +71,7 @@
           const perPerson = total / numPeople;
           resultDiv.innerText = `Total belanja: Rp ${total.toLocaleString("id-ID")}\nPatungan per orang: Rp ${perPerson.toLocaleString("id-ID")}`;
         } else {
-          resultDiv.innerText = "Gagal menemukan 'Total' dalam struk. Coba upload ulang atau perjelas gambar.";
+          resultDiv.innerText = "❌ Gagal menemukan 'Total' dalam hasil OCR. Periksa teks mentah di bawah.";
         }
       }).catch(err => {
         resultDiv.innerText = "Gagal membaca gambar. Coba lagi.";
