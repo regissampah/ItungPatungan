@@ -2,79 +2,99 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <title>Hitung Patungan Makan</title>
+  <title>Patungan Otomatis dari Struk</title>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.0.4/dist/tesseract.min.js"></script>
   <style>
-    body { font-family: Arial; padding: 20px; max-width: 700px; margin: auto; }
-    input[type="number"] { width: 60px; }
-    .menu-item { margin-bottom: 10px; }
+    body { font-family: Arial; padding: 20px; max-width: 800px; margin: auto; }
     img { max-width: 100%; margin-top: 10px; }
-    .hasil { margin-top: 20px; font-weight: bold; }
+    .menu-item { margin: 10px 0; display: flex; gap: 10px; align-items: center; }
+    input[type="number"] { width: 60px; }
   </style>
 </head>
 <body>
-  <h2>Hitung Patungan Pesanan Makanan</h2>
+  <h2>Kalkulator Patungan Otomatis</h2>
 
-  <label>Upload Foto Struk:</label><br>
-  <input type="file" accept="image/*" onchange="previewImage(event)"><br>
-  <img id="strukPreview"><br><br>
+  <input type="file" accept="image/*" onchange="readImage(event)">
+  <img id="preview"><br>
+  <p id="loading"></p>
 
-  <div id="menuList">
-    <div class="menu-item">
-      <label>Bakmi Ayam Oven Original (Rp40.500): </label>
-      <input type="number" min="0" value="0" id="m1"> orang
-    </div>
-    <div class="menu-item">
-      <label>Promo Bakmi Ayam Matah + Vanilla Tea (Rp46.500): </label>
-      <input type="number" min="0" value="0" id="m2"> orang
-    </div>
-    <div class="menu-item">
-      <label>Bakmi Ayam Oven Komplit (Rp57.500): </label>
-      <input type="number" min="0" value="0" id="m3"> orang
-    </div>
-  </div>
+  <div id="menuList"></div>
 
-  <button onclick="hitungPatungan()">Hitung Total Per Orang</button>
+  <label>Ongkir: <input type="number" id="ongkir" value="0"></label><br>
+  <label>Fee: <input type="number" id="fee" value="0"></label><br>
+  <label>Diskon: <input type="number" id="diskon" value="0"></label><br><br>
 
-  <div class="hasil" id="hasilPatungan"></div>
+  <button onclick="hitung()">Hitung Patungan</button>
+  <div id="hasilPatungan" style="margin-top:20px; font-weight:bold;"></div>
 
   <script>
-    function previewImage(event) {
-      const img = document.getElementById("strukPreview");
+    function readImage(event) {
+      const img = document.getElementById("preview");
       img.src = URL.createObjectURL(event.target.files[0]);
+
+      document.getElementById("loading").innerText = "Membaca struk...";
+      Tesseract.recognize(event.target.files[0], 'eng', {
+        logger: m => console.log(m)
+      }).then(({ data: { text } }) => {
+        document.getElementById("loading").innerText = "";
+        const lines = text.split('\n').map(l => l.trim()).filter(l => l);
+        const menuContainer = document.getElementById("menuList");
+        menuContainer.innerHTML = '';
+
+        lines.forEach(line => {
+          const match = line.match(/(.+?)\s+(\d{2,3}[.,]?\d{0,3})$/);
+          if (match) {
+            const nama = match[1];
+            const harga = match[2].replace('.', '').replace(',', '');
+            const itemHTML = `
+              <div class="menu-item">
+                <label>${nama} - Rp${harga}</label>
+                <input type="hidden" value="${harga}" class="harga">
+                <input type="number" placeholder="orang" class="jumlah" min="1">
+              </div>`;
+            menuContainer.innerHTML += itemHTML;
+          }
+
+          // Coba cari diskon / ongkir otomatis juga
+          if (/disc|discount/i.test(line)) {
+            const val = line.match(/[-]?\d{2,5}[.,]?\d{0,3}/);
+            if (val) document.getElementById("diskon").value = parseInt(val[0].replace('.', '').replace(',', ''));
+          }
+          if (/delivery|ongkir/i.test(line)) {
+            const val = line.match(/\d{2,5}[.,]?\d{0,3}/);
+            if (val) document.getElementById("ongkir").value = parseInt(val[0].replace('.', '').replace(',', ''));
+          }
+        });
+      });
     }
 
-    function hitungPatungan() {
-      const harga = [40500, 46500, 57500];
-      const jml = [
-        parseInt(document.getElementById("m1").value) || 0,
-        parseInt(document.getElementById("m2").value) || 0,
-        parseInt(document.getElementById("m3").value) || 0
-      ];
+    function hitung() {
+      const hargaList = Array.from(document.querySelectorAll(".harga")).map(h => parseInt(h.value));
+      const orangList = Array.from(document.querySelectorAll(".jumlah")).map(j => parseInt(j.value) || 0);
 
-      let totalMenu = 0;
-      for (let i = 0; i < harga.length; i++) totalMenu += harga[i];
+      const ongkir = parseInt(document.getElementById("ongkir").value) || 0;
+      const fee = parseInt(document.getElementById("fee").value) || 0;
+      const diskon = parseInt(document.getElementById("diskon").value) || 0;
 
-      const delivery = 10000;
-      const fee = 3000;
-      const diskon = 47685;
-      const totalBayar = totalMenu + delivery + fee - diskon;
+      const totalMenu = hargaList.reduce((a, b) => a + b, 0);
+      const totalOrang = orangList.reduce((a, b) => a + b, 0);
+      const totalBayar = totalMenu + ongkir + fee - diskon;
 
-      const totalOrang = jml.reduce((a, b) => a + b, 0);
       if (totalOrang === 0) {
         document.getElementById("hasilPatungan").innerText = "Isi jumlah orang yang pesan dulu.";
         return;
       }
 
-      let hasil = "";
-      for (let i = 0; i < jml.length; i++) {
-        if (jml[i] > 0) {
-          const proporsi = (harga[i] / totalMenu);
-          const totalBayarMenu = totalBayar * proporsi;
-          const bayarPerOrang = totalBayarMenu / jml[i];
-          hasil += `Menu ${i + 1}: ${jml[i]} orang x Rp${bayarPerOrang.toFixed(0)}<br>`;
+      let hasil = "<ul>";
+      for (let i = 0; i < hargaList.length; i++) {
+        if (orangList[i] > 0) {
+          const proporsi = hargaList[i] / totalMenu;
+          const bagian = totalBayar * proporsi;
+          const perOrang = bagian / orangList[i];
+          hasil += `<li>Menu ${i + 1}: ${orangList[i]} orang × Rp${perOrang.toFixed(0)}</li>`;
         }
       }
-
+      hasil += "</ul>";
       document.getElementById("hasilPatungan").innerHTML = hasil;
     }
   </script>
