@@ -1,309 +1,82 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <title>Patungan Per Menu dari Struk</title>
-  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.0.2/dist/tesseract.min.js"></script>
+  <meta charset="UTF-8">
+  <title>Hitung Patungan Makan</title>
   <style>
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: #f0f4f8;
-      margin: 0; padding: 20px;
-      display: flex; justify-content: center;
-    }
-    .container {
-      background: white;
-      max-width: 600px;
-      width: 100%;
-      border-radius: 10px;
-      padding: 30px;
-      box-shadow: 0 6px 18px rgba(0,0,0,0.1);
-    }
-    h1 {
-      text-align: center;
-      margin-bottom: 25px;
-      color: #333;
-    }
-    label {
-      font-weight: 600;
-      margin-top: 15px;
-      display: block;
-      color: #555;
-    }
-    input[type="file"], input[type="text"], button {
-      width: 100%;
-      padding: 10px 12px;
-      margin-top: 8px;
-      border: 1.5px solid #ddd;
-      border-radius: 8px;
-      font-size: 1rem;
-    }
-    input[type="number"] {
-      width: 60px;
-      margin-left: 8px;
-      border-radius: 6px;
-      border: 1.5px solid #ddd;
-      padding: 6px 10px;
-      font-size: 1rem;
-    }
-    button {
-      background-color: #4a90e2;
-      color: white;
-      border: none;
-      font-weight: 700;
-      cursor: pointer;
-      margin-top: 20px;
-      transition: background-color 0.3s;
-    }
-    button:hover:not(:disabled) {
-      background-color: #357ABD;
-    }
-    button:disabled {
-      background-color: #a3c0f7;
-      cursor: not-allowed;
-    }
-    #preview {
-      max-width: 100%;
-      margin: 15px 0;
-      border-radius: 10px;
-      object-fit: contain;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-    #menuList, #personList {
-      margin-top: 15px;
-      max-height: 250px;
-      overflow-y: auto;
-      border: 1.5px solid #ddd;
-      border-radius: 8px;
-      padding: 12px;
-      background: #fafafa;
-    }
-    .menu-item, .person-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 8px;
-      padding-bottom: 4px;
-      border-bottom: 1px solid #ddd;
-    }
-    .menu-item:last-child, .person-item:last-child {
-      border-bottom: none;
-    }
-    .menu-item label {
-      flex-grow: 1;
-      cursor: pointer;
-    }
-    .person-name {
-      font-weight: 600;
-      flex-grow: 1;
-    }
-    .person-menu-list {
-      font-size: 0.9rem;
-      color: #666;
-      margin-left: 10px;
-    }
-    #result {
-      margin-top: 25px;
-      font-weight: 700;
-      font-size: 1.1rem;
-      color: #222;
-      white-space: pre-line;
-    }
+    body { font-family: Arial; padding: 20px; max-width: 700px; margin: auto; }
+    input[type="number"] { width: 60px; }
+    .menu-item { margin-bottom: 10px; }
+    img { max-width: 100%; margin-top: 10px; }
+    .hasil { margin-top: 20px; font-weight: bold; }
   </style>
 </head>
 <body>
+  <h2>Hitung Patungan Pesanan Makanan</h2>
 
-  <div class="container">
-    <h1>Patungan Per Menu dari Struk</h1>
+  <label>Upload Foto Struk:</label><br>
+  <input type="file" accept="image/*" onchange="previewImage(event)"><br>
+  <img id="strukPreview"><br><br>
 
-    <label for="imageInput">Upload Foto Struk:</label>
-    <input type="file" id="imageInput" accept="image/*" />
-    <img id="preview" alt="Preview Foto Struk" />
-
-    <label>Daftar Menu Ditemukan (pilih untuk patungan):</label>
-    <div id="menuList">Belum ada menu...</div>
-
-    <label>Tambah Peserta dan Pilih Menu Pesanan:</label>
-    <input type="text" id="personName" placeholder="Nama peserta" />
-    <button id="addPersonBtn" disabled>Tambah Peserta</button>
-
-    <div id="personList">Belum ada peserta...</div>
-
-    <button id="calcBtn" disabled>Hitung Patungan</button>
-
-    <div id="result"></div>
+  <div id="menuList">
+    <div class="menu-item">
+      <label>Bakmi Ayam Oven Original (Rp40.500): </label>
+      <input type="number" min="0" value="0" id="m1"> orang
+    </div>
+    <div class="menu-item">
+      <label>Promo Bakmi Ayam Matah + Vanilla Tea (Rp46.500): </label>
+      <input type="number" min="0" value="0" id="m2"> orang
+    </div>
+    <div class="menu-item">
+      <label>Bakmi Ayam Oven Komplit (Rp57.500): </label>
+      <input type="number" min="0" value="0" id="m3"> orang
+    </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.0.2/dist/tesseract.min.js"></script>
+  <button onclick="hitungPatungan()">Hitung Total Per Orang</button>
+
+  <div class="hasil" id="hasilPatungan"></div>
+
   <script>
-    const imageInput = document.getElementById('imageInput');
-    const preview = document.getElementById('preview');
-    const menuListDiv = document.getElementById('menuList');
-    const personNameInput = document.getElementById('personName');
-    const addPersonBtn = document.getElementById('addPersonBtn');
-    const personListDiv = document.getElementById('personList');
-    const calcBtn = document.getElementById('calcBtn');
-    const resultDiv = document.getElementById('result');
-
-    let menuItems = []; // {id, name, price}
-    let persons = []; // {id, name, selectedMenuIds: []}
-    let menuIdCounter = 0;
-    let personIdCounter = 0;
-
-    imageInput.addEventListener('change', () => {
-      const file = imageInput.files[0];
-      if (!file) return;
-
-      preview.src = URL.createObjectURL(file);
-      menuItems = [];
-      persons = [];
-      personListDiv.innerHTML = 'Belum ada peserta...';
-      resultDiv.textContent = '';
-      menuListDiv.textContent = 'Membaca struk, tunggu...';
-      addPersonBtn.disabled = true;
-      calcBtn.disabled = true;
-
-      Tesseract.recognize(file, 'ind', { logger: m => console.log(m) })
-        .then(({ data: { text } }) => {
-          // Proses teks OCR untuk ekstrak menu + harga
-          menuItems = extractMenuItems(text);
-          if (menuItems.length === 0) {
-            menuListDiv.textContent = 'Gagal menemukan menu dengan harga.';
-          } else {
-            renderMenuList();
-            menuListDiv.scrollTop = 0;
-            addPersonBtn.disabled = false;
-          }
-        })
-        .catch(err => {
-          menuListDiv.textContent = 'Gagal membaca gambar.';
-          console.error(err);
-        });
-    });
-
-    function extractMenuItems(text) {
-      const lines = text.split(/\r?\n/);
-      const items = [];
-      for (const line of lines) {
-        // Coba cari pola: nama menu di depan, angka harga di belakang
-        // Contoh: "Bakmi Ayam Oven Original 40.500"
-        const match = line.match(/(.+?)\s+([\d.,]{2,})$/);
-        if (match) {
-          let name = match[1].trim();
-          let priceStr = match[2].replace(/\./g, '').replace(',', '.');
-          let price = parseFloat(priceStr);
-          if (!isNaN(price)) {
-            items.push({ id: ++menuIdCounter, name, price });
-          }
-        }
-      }
-      return items;
+    function previewImage(event) {
+      const img = document.getElementById("strukPreview");
+      img.src = URL.createObjectURL(event.target.files[0]);
     }
 
-    function renderMenuList() {
-      if (menuItems.length === 0) {
-        menuListDiv.textContent = 'Belum ada menu...';
+    function hitungPatungan() {
+      const harga = [40500, 46500, 57500];
+      const jml = [
+        parseInt(document.getElementById("m1").value) || 0,
+        parseInt(document.getElementById("m2").value) || 0,
+        parseInt(document.getElementById("m3").value) || 0
+      ];
+
+      let totalMenu = 0;
+      for (let i = 0; i < harga.length; i++) totalMenu += harga[i];
+
+      const delivery = 10000;
+      const fee = 3000;
+      const diskon = 47685;
+      const totalBayar = totalMenu + delivery + fee - diskon;
+
+      const totalOrang = jml.reduce((a, b) => a + b, 0);
+      if (totalOrang === 0) {
+        document.getElementById("hasilPatungan").innerText = "Isi jumlah orang yang pesan dulu.";
         return;
       }
-      menuListDiv.innerHTML = '';
-      for (const item of menuItems) {
-        const div = document.createElement('div');
-        div.className = 'menu-item';
-        div.innerHTML = `
-          <label>
-            <input type="checkbox" data-id="${item.id}" />
-            ${item.name} - Rp ${item.price.toLocaleString('id-ID')}
-          </label>
-        `;
-        menuListDiv.appendChild(div);
+
+      let hasil = "";
+      for (let i = 0; i < jml.length; i++) {
+        if (jml[i] > 0) {
+          const proporsi = (harga[i] / totalMenu);
+          const totalBayarMenu = totalBayar * proporsi;
+          const bayarPerOrang = totalBayarMenu / jml[i];
+          hasil += `Menu ${i + 1}: ${jml[i]} orang x Rp${bayarPerOrang.toFixed(0)}<br>`;
+        }
       }
+
+      document.getElementById("hasilPatungan").innerHTML = hasil;
     }
-
-    personNameInput.addEventListener('input', () => {
-      addPersonBtn.disabled = personNameInput.value.trim() === '';
-    });
-
-    addPersonBtn.addEventListener('click', () => {
-      const name = personNameInput.value.trim();
-      if (!name) return;
-      persons.push({ id: ++personIdCounter, name, selectedMenuIds: [] });
-      personNameInput.value = '';
-      addPersonBtn.disabled = true;
-      renderPersonList();
-      calcBtn.disabled = false;
-    });
-
-    function renderPersonList() {
-      if (persons.length === 0) {
-        personListDiv.textContent = 'Belum ada peserta...';
-        calcBtn.disabled = true;
-        return;
-      }
-      personListDiv.innerHTML = '';
-      for (const p of persons) {
-        const div = document.createElement('div');
-        div.className = 'person-item';
-
-        // Buat list checkbox menu untuk setiap orang
-        let menuCheckboxes = '';
-        for (const item of menuItems) {
-          const checked = p.selectedMenuIds.includes(item.id) ? 'checked' : '';
-          menuCheckboxes += `
-            <label style="margin-right:10px; cursor:pointer;">
-              <input type="checkbox" data-personid="${p.id}" data-menuid="${item.id}" ${checked} />
-              ${item.name}
-            </label>
-          `;
-        }
-
-        div.innerHTML = `
-          <div class="person-name">${p.name}</div>
-          <div class="person-menu-list">${menuCheckboxes}</div>
-        `;
-
-        personListDiv.appendChild(div);
-      }
-
-      // Pasang event listener ke checkbox menu orang
-      personListDiv.querySelectorAll('input[type=checkbox]').forEach(cb => {
-        cb.addEventListener('change', (e) => {
-          const personId = Number(e.target.getAttribute('data-personid'));
-          const menuId = Number(e.target.getAttribute('data-menuid'));
-          const person = persons.find(x => x.id === personId);
-          if (!person) return;
-
-          if (e.target.checked) {
-            if (!person.selectedMenuIds.includes(menuId)) {
-              person.selectedMenuIds.push(menuId);
-            }
-          } else {
-            person.selectedMenuIds = person.selectedMenuIds.filter(id => id !== menuId);
-          }
-        });
-      });
-    }
-
-    calcBtn.addEventListener('click', () => {
-      if (persons.length === 0) {
-        alert('Tambahkan peserta dulu.');
-        return;
-      }
-      // Hitung total patungan per orang
-      let results = '';
-      for (const p of persons) {
-        if (p.selectedMenuIds.length === 0) {
-          results += `${p.name}: Tidak memesan apapun\n`;
-          continue;
-        }
-        let total = 0;
-        for (const menuId of p.selectedMenuIds) {
-          const item = menuItems.find(x => x.id === menuId);
-          if (item) total += item.price;
-        }
-        results += `${p.name}: Rp ${total.toLocaleString('id-ID')}\n`;
-      }
-      resultDiv.textContent = results;
-    });
   </script>
 </body>
 </html>
