@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <title>Hitung Patungan dari Foto Struk (Debug)</title>
+  <title>Hitung Patungan dari Foto Struk (Improved)</title>
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.0.2/dist/tesseract.min.js"></script>
   <style>
     body { font-family: sans-serif; padding: 20px; max-width: 600px; margin: auto; }
@@ -14,7 +14,7 @@
   </style>
 </head>
 <body>
-  <h2>Hitung Patungan dari Foto Struk (Debug)</h2>
+  <h2>Hitung Patungan dari Foto Struk (Improved)</h2>
 
   <label>Upload Foto Struk (.jpg/.png):</label>
   <input type="file" id="imageInput" accept="image/*" />
@@ -58,7 +58,8 @@
       }).then(({ data: { text } }) => {
         ocrTextArea.value = text;
 
-        const match = text.match(/total\\s*[:\\-]?\\s*([\\d.,]+)/i);
+        // Lebih fleksibel: cari "total" diikuti "Rp" atau langsung angka
+        const match = text.match(/total.*?rp?\\s*([\\d.,]+)/i);
         if (match) {
           let total = match[1].replace('.', '').replace(',', '.');
           total = parseFloat(total);
