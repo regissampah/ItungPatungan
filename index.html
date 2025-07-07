@@ -1,0 +1,64 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Hitung Patungan</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; max-width: 600px; margin: auto; }
+    input, button { margin-top: 10px; display: block; width: 100%; }
+    #result { margin-top: 20px; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h2>Hitung Patungan dari Struk Belanja</h2>
+
+  <label>Upload Struk (.txt atau .csv):</label>
+  <input type="file" id="fileInput" accept=".txt,.csv" />
+
+  <label>Jumlah Orang Patungan:</label>
+  <input type="number" id="numPeople" min="1" placeholder="Misalnya 3" />
+
+  <button onclick="calculateSplit()">Hitung Patungan</button>
+
+  <div id="result"></div>
+
+  <script>
+    function calculateSplit() {
+      const file = document.getElementById("fileInput").files[0];
+      const numPeople = parseInt(document.getElementById("numPeople").value);
+      const resultDiv = document.getElementById("result");
+
+      if (!file || isNaN(numPeople) || numPeople <= 0) {
+        resultDiv.innerText = "Mohon upload struk dan masukkan jumlah orang.";
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const text = e.target.result;
+
+        // Coba cari total belanja dari struk (contoh: "Total: 125000")
+        const match = text.match(/total\s*[:\-]?\s*([\d.,]+)/i);
+        if (match) {
+          let total = match[1].replace('.', '').replace(',', '.'); // format Indonesia
+          total = parseFloat(total);
+
+          if (isNaN(total)) {
+            resultDiv.innerText = "Gagal membaca total dari struk.";
+            return;
+          }
+
+          const perPerson = total / numPeople;
+          resultDiv.innerText = `Total belanja: Rp ${total.toLocaleString("id-ID")} \n\nPatungan per orang: Rp ${perPerson.toLocaleString("id-ID")}`;
+        } else {
+          resultDiv.innerText = "Tidak ditemukan angka total dalam struk.";
+        }
+      };
+
+      reader.readAsText(file);
+    }
+  </script>
+</body>
+</html>
