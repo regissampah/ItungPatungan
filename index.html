@@ -2,10 +2,9 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <title>Itung Patungan dari Struk</title>
+  <title>Hitung Patungan dari Struk</title>
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.0.2/dist/tesseract.min.js"></script>
   <style>
-    /* Reset dan font */
     * {
       box-sizing: border-box;
     }
@@ -130,7 +129,6 @@
     <textarea id="ocrText" readonly></textarea>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.0.2/dist/tesseract.min.js"></script>
   <script>
     const imageInput = document.getElementById('imageInput');
     const preview = document.getElementById('preview');
@@ -177,22 +175,32 @@
           ocrTextArea.value = text;
 
           const lines = text.split(/\r?\n/);
-          let total = null;
 
-          for(let i = 0; i < lines.length; i++) {
-            const lineLower = lines[i].toLowerCase();
-            if(lineLower.includes('total')) {
-              let match = lines[i].match(/[\d.,]+/);
-              if (!match && i + 1 < lines.length) {
-                match = lines[i+1].match(/[\d.,]+/);
-              }
-              if(match) {
-                const numStr = match[0].replace(/\./g, '').replace(',', '.');
-                total = parseFloat(numStr);
-                break;
+          function cariTotal(lines) {
+            for (let i = 0; i < lines.length; i++) {
+              const lineLower = lines[i].toLowerCase();
+              if (lineLower.includes('total')) {
+                const regex = /total.*?([\d.,]+)/i;
+                const match = lines[i].match(regex);
+                if (match && match[1]) {
+                  const numStr = match[1].replace(/\./g, '').replace(',', '.');
+                  const val = parseFloat(numStr);
+                  if (!isNaN(val)) return val;
+                }
+                if (i + 1 < lines.length) {
+                  const nextMatch = lines[i+1].match(/[\d.,]+/);
+                  if (nextMatch) {
+                    const numStr = nextMatch[0].replace(/\./g, '').replace(',', '.');
+                    const val = parseFloat(numStr);
+                    if (!isNaN(val)) return val;
+                  }
+                }
               }
             }
+            return null;
           }
+
+          const total = cariTotal(lines);
 
           if (total && !isNaN(total)) {
             const perPerson = total / numPeople;
@@ -208,5 +216,6 @@
     });
   </script>
 
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.0.2/dist/tesseract.min.js"></script>
 </body>
 </html>
