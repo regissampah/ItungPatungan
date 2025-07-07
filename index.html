@@ -2,92 +2,211 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <title>Hitung Patungan dari Foto Struk (Fix Khusus)</title>
+  <title>Itung Patungan dari Struk</title>
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.0.2/dist/tesseract.min.js"></script>
   <style>
-    body { font-family: sans-serif; padding: 20px; max-width: 600px; margin: auto; }
-    input, button { margin-top: 10px; display: block; width: 100%; }
-    #result, #ocrText { margin-top: 20px; white-space: pre-line; }
-    #result { font-weight: bold; }
-    img { max-width: 100%; margin-top: 10px; }
-    textarea { width: 100%; height: 150px; margin-top: 10px; font-family: monospace; }
+    /* Reset dan font */
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f7f9fc;
+      color: #333;
+      display: flex;
+      justify-content: center;
+      padding: 20px;
+      min-height: 100vh;
+    }
+    .container {
+      background: white;
+      padding: 30px 40px;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+      max-width: 480px;
+      width: 100%;
+    }
+    h1 {
+      font-weight: 700;
+      font-size: 1.6rem;
+      margin-bottom: 25px;
+      text-align: center;
+      color: #222;
+    }
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: #555;
+    }
+    input[type="file"],
+    input[type="number"] {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1.8px solid #ddd;
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: border-color 0.3s;
+    }
+    input[type="file"]:focus,
+    input[type="number"]:focus {
+      outline: none;
+      border-color: #4a90e2;
+      box-shadow: 0 0 8px rgba(74,144,226,0.3);
+    }
+    #preview {
+      display: block;
+      margin: 20px auto;
+      max-width: 100%;
+      max-height: 240px;
+      border-radius: 10px;
+      object-fit: contain;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    button {
+      width: 100%;
+      padding: 14px 0;
+      background: #4a90e2;
+      border: none;
+      border-radius: 10px;
+      color: white;
+      font-weight: 700;
+      font-size: 1.1rem;
+      cursor: pointer;
+      margin-top: 20px;
+      transition: background-color 0.3s ease;
+    }
+    button:hover:not(:disabled) {
+      background: #357ABD;
+    }
+    button:disabled {
+      background: #a3c0f7;
+      cursor: not-allowed;
+    }
+    #result {
+      margin-top: 25px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      white-space: pre-line;
+      color: #222;
+      min-height: 48px;
+      text-align: center;
+    }
+    #ocrText {
+      width: 100%;
+      margin-top: 25px;
+      height: 140px;
+      resize: vertical;
+      font-family: monospace;
+      font-size: 0.85rem;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1.5px solid #ddd;
+      background: #fafafa;
+      color: #555;
+    }
   </style>
 </head>
 <body>
-  <h2>Hitung Patungan dari Foto Struk (Fix Khusus)</h2>
 
-  <label>Upload Foto Struk (.jpg/.png):</label>
-  <input type="file" id="imageInput" accept="image/*" />
-  <img id="preview" src="" alt="Preview" />
+  <div class="container">
+    <h1>Hitung Patungan dari Struk Belanja</h1>
 
-  <label>Jumlah Orang Patungan:</label>
-  <input type="number" id="numPeople" min="1" placeholder="Misalnya 3" />
+    <label for="imageInput">Upload Foto Struk (.jpg/.png):</label>
+    <input type="file" id="imageInput" accept="image/*" />
 
-  <button onclick="processImage()">Hitung Patungan</button>
+    <img id="preview" alt="Preview Foto Struk" />
 
-  <div id="result"></div>
-  <label>Hasil OCR (mentah):</label>
-  <textarea id="ocrText" readonly></textarea>
+    <label for="numPeople">Jumlah Orang Patungan:</label>
+    <input type="number" id="numPeople" min="1" placeholder="Misalnya 3" />
 
+    <button id="btnProcess" disabled>Hitung Patungan</button>
+
+    <div id="result"></div>
+
+    <label for="ocrText">Hasil OCR (mentah):</label>
+    <textarea id="ocrText" readonly></textarea>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.0.2/dist/tesseract.min.js"></script>
   <script>
-    const preview = document.getElementById("preview");
+    const imageInput = document.getElementById('imageInput');
+    const preview = document.getElementById('preview');
+    const numPeopleInput = document.getElementById('numPeople');
+    const btnProcess = document.getElementById('btnProcess');
+    const resultDiv = document.getElementById('result');
+    const ocrTextArea = document.getElementById('ocrText');
 
-    document.getElementById("imageInput").addEventListener("change", function() {
-      const file = this.files[0];
-      if (file) {
-        preview.src = URL.createObjectURL(file);
+    let selectedFile = null;
+
+    function updateButtonState() {
+      btnProcess.disabled = !selectedFile || !numPeopleInput.value || Number(numPeopleInput.value) <= 0;
+    }
+
+    imageInput.addEventListener('change', () => {
+      selectedFile = imageInput.files[0] || null;
+      if(selectedFile) {
+        preview.src = URL.createObjectURL(selectedFile);
+      } else {
+        preview.src = '';
       }
+      resultDiv.textContent = '';
+      ocrTextArea.value = '';
+      updateButtonState();
     });
 
-    function processImage() {
-      const image = document.getElementById("imageInput").files[0];
-      const numPeople = parseInt(document.getElementById("numPeople").value);
-      const resultDiv = document.getElementById("result");
-      const ocrTextArea = document.getElementById("ocrText");
+    numPeopleInput.addEventListener('input', () => {
+      updateButtonState();
+    });
 
-      if (!image || isNaN(numPeople) || numPeople <= 0) {
-        resultDiv.innerText = "Mohon upload foto dan jumlah orang.";
+    btnProcess.addEventListener('click', () => {
+      if (!selectedFile) return;
+      const numPeople = Number(numPeopleInput.value);
+      if (isNaN(numPeople) || numPeople <= 0) {
+        resultDiv.textContent = 'Mohon isi jumlah orang patungan dengan benar.';
         return;
       }
 
-      resultDiv.innerText = "Membaca struk dari foto...";
-      ocrTextArea.value = "";
+      resultDiv.textContent = 'Membaca struk dari foto...';
+      ocrTextArea.value = '';
 
-      Tesseract.recognize(image, 'ind', { logger: m => console.log(m) }).then(({ data: { text } }) => {
-        ocrTextArea.value = text;
+      Tesseract.recognize(selectedFile, 'ind', { logger: m => console.log(m) })
+        .then(({ data: { text } }) => {
+          ocrTextArea.value = text;
 
-        const lines = text.split(/\r?\n/);
-        let total = null;
+          const lines = text.split(/\r?\n/);
+          let total = null;
 
-        for(let i = 0; i < lines.length; i++) {
-          const lineLower = lines[i].toLowerCase();
-          if(lineLower.includes('total')) {
-            // cari angka di baris total dulu
-            let match = lines[i].match(/[\d.,]+/);
-            if (!match && i + 1 < lines.length) {
-              // jika tidak ditemukan, coba di baris berikutnya
-              match = lines[i+1].match(/[\d.,]+/);
-            }
-            if(match) {
-              // bersihkan angka: hilangkan titik, ganti koma dengan titik untuk decimal
-              const numStr = match[0].replace(/\./g, '').replace(',', '.');
-              total = parseFloat(numStr);
-              break;
+          for(let i = 0; i < lines.length; i++) {
+            const lineLower = lines[i].toLowerCase();
+            if(lineLower.includes('total')) {
+              let match = lines[i].match(/[\d.,]+/);
+              if (!match && i + 1 < lines.length) {
+                match = lines[i+1].match(/[\d.,]+/);
+              }
+              if(match) {
+                const numStr = match[0].replace(/\./g, '').replace(',', '.');
+                total = parseFloat(numStr);
+                break;
+              }
             }
           }
-        }
 
-        if (total && !isNaN(total)) {
-          const perPerson = total / numPeople;
-          resultDiv.innerText = `Total belanja: Rp ${total.toLocaleString('id-ID')}\nPatungan per orang: Rp ${perPerson.toLocaleString('id-ID')}`;
-        } else {
-          resultDiv.innerText = "❌ Gagal menemukan total yang valid. Periksa teks mentah di bawah.";
-        }
-      }).catch(err => {
-        resultDiv.innerText = "Gagal membaca gambar. Coba lagi.";
-        console.error(err);
-      });
-    }
+          if (total && !isNaN(total)) {
+            const perPerson = total / numPeople;
+            resultDiv.textContent = `Total belanja: Rp ${total.toLocaleString('id-ID')}\nPatungan per orang: Rp ${perPerson.toLocaleString('id-ID')}`;
+          } else {
+            resultDiv.textContent = "❌ Gagal menemukan total. Periksa hasil OCR di bawah.";
+          }
+        })
+        .catch(err => {
+          resultDiv.textContent = "Gagal membaca gambar. Coba lagi.";
+          console.error(err);
+        });
+    });
   </script>
+
 </body>
 </html>
