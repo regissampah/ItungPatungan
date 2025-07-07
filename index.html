@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <title>Hitung Patungan dari Foto Struk (Improved)</title>
+  <title>Hitung Patungan dari Foto Struk (Final)</title>
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.0.2/dist/tesseract.min.js"></script>
   <style>
     body { font-family: sans-serif; padding: 20px; max-width: 600px; margin: auto; }
@@ -14,7 +14,7 @@
   </style>
 </head>
 <body>
-  <h2>Hitung Patungan dari Foto Struk (Improved)</h2>
+  <h2>Hitung Patungan dari Foto Struk (Final)</h2>
 
   <label>Upload Foto Struk (.jpg/.png):</label>
   <input type="file" id="imageInput" accept="image/*" />
@@ -58,17 +58,20 @@
       }).then(({ data: { text } }) => {
         ocrTextArea.value = text;
 
-        // Lebih fleksibel: cari "total" diikuti "Rp" atau langsung angka
-        const match = text.match(/total.*?rp?\\s*([\\d.,]+)/i);
-        if (match) {
-          let total = match[1].replace('.', '').replace(',', '.');
-          total = parseFloat(total);
+        let total = null;
+        const lines = text.split(/\\r?\\n/);
 
-          if (isNaN(total)) {
-            resultDiv.innerText = "Tidak bisa mengubah teks total menjadi angka.";
-            return;
+        for (let line of lines) {
+          if (line.toLowerCase().includes("total")) {
+            const numMatch = line.match(/([\\d.,]+)/);
+            if (numMatch) {
+              total = parseFloat(numMatch[1].replace('.', '').replace(',', '.'));
+              break;
+            }
           }
+        }
 
+        if (total && !isNaN(total)) {
           const perPerson = total / numPeople;
           resultDiv.innerText = `Total belanja: Rp ${total.toLocaleString("id-ID")}\nPatungan per orang: Rp ${perPerson.toLocaleString("id-ID")}`;
         } else {
