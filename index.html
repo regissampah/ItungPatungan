@@ -2,220 +2,308 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <title>Hitung Patungan dari Struk</title>
+  <title>Patungan Per Menu dari Struk</title>
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.0.2/dist/tesseract.min.js"></script>
   <style>
-    * {
-      box-sizing: border-box;
-    }
     body {
-      margin: 0;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: #f7f9fc;
-      color: #333;
-      display: flex;
-      justify-content: center;
-      padding: 20px;
-      min-height: 100vh;
+      background: #f0f4f8;
+      margin: 0; padding: 20px;
+      display: flex; justify-content: center;
     }
     .container {
       background: white;
-      padding: 30px 40px;
-      border-radius: 12px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.1);
-      max-width: 480px;
+      max-width: 600px;
       width: 100%;
+      border-radius: 10px;
+      padding: 30px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.1);
     }
     h1 {
-      font-weight: 700;
-      font-size: 1.6rem;
-      margin-bottom: 25px;
       text-align: center;
-      color: #222;
+      margin-bottom: 25px;
+      color: #333;
     }
     label {
-      display: block;
-      margin-bottom: 8px;
       font-weight: 600;
-      font-size: 0.9rem;
+      margin-top: 15px;
+      display: block;
       color: #555;
     }
-    input[type="file"],
-    input[type="number"] {
+    input[type="file"], input[type="text"], button {
       width: 100%;
       padding: 10px 12px;
-      border: 1.8px solid #ddd;
+      margin-top: 8px;
+      border: 1.5px solid #ddd;
       border-radius: 8px;
       font-size: 1rem;
-      transition: border-color 0.3s;
     }
-    input[type="file"]:focus,
-    input[type="number"]:focus {
-      outline: none;
-      border-color: #4a90e2;
-      box-shadow: 0 0 8px rgba(74,144,226,0.3);
+    input[type="number"] {
+      width: 60px;
+      margin-left: 8px;
+      border-radius: 6px;
+      border: 1.5px solid #ddd;
+      padding: 6px 10px;
+      font-size: 1rem;
+    }
+    button {
+      background-color: #4a90e2;
+      color: white;
+      border: none;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 20px;
+      transition: background-color 0.3s;
+    }
+    button:hover:not(:disabled) {
+      background-color: #357ABD;
+    }
+    button:disabled {
+      background-color: #a3c0f7;
+      cursor: not-allowed;
     }
     #preview {
-      display: block;
-      margin: 20px auto;
       max-width: 100%;
-      max-height: 240px;
+      margin: 15px 0;
       border-radius: 10px;
       object-fit: contain;
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
-    button {
-      width: 100%;
-      padding: 14px 0;
-      background: #4a90e2;
-      border: none;
-      border-radius: 10px;
-      color: white;
-      font-weight: 700;
-      font-size: 1.1rem;
+    #menuList, #personList {
+      margin-top: 15px;
+      max-height: 250px;
+      overflow-y: auto;
+      border: 1.5px solid #ddd;
+      border-radius: 8px;
+      padding: 12px;
+      background: #fafafa;
+    }
+    .menu-item, .person-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      padding-bottom: 4px;
+      border-bottom: 1px solid #ddd;
+    }
+    .menu-item:last-child, .person-item:last-child {
+      border-bottom: none;
+    }
+    .menu-item label {
+      flex-grow: 1;
       cursor: pointer;
-      margin-top: 20px;
-      transition: background-color 0.3s ease;
     }
-    button:hover:not(:disabled) {
-      background: #357ABD;
+    .person-name {
+      font-weight: 600;
+      flex-grow: 1;
     }
-    button:disabled {
-      background: #a3c0f7;
-      cursor: not-allowed;
+    .person-menu-list {
+      font-size: 0.9rem;
+      color: #666;
+      margin-left: 10px;
     }
     #result {
       margin-top: 25px;
+      font-weight: 700;
       font-size: 1.1rem;
-      font-weight: 600;
-      white-space: pre-line;
       color: #222;
-      min-height: 48px;
-      text-align: center;
-    }
-    #ocrText {
-      width: 100%;
-      margin-top: 25px;
-      height: 140px;
-      resize: vertical;
-      font-family: monospace;
-      font-size: 0.85rem;
-      padding: 12px;
-      border-radius: 8px;
-      border: 1.5px solid #ddd;
-      background: #fafafa;
-      color: #555;
+      white-space: pre-line;
     }
   </style>
 </head>
 <body>
 
   <div class="container">
-    <h1>Hitung Patungan dari Struk Belanja</h1>
+    <h1>Patungan Per Menu dari Struk</h1>
 
-    <label for="imageInput">Upload Foto Struk (.jpg/.png):</label>
+    <label for="imageInput">Upload Foto Struk:</label>
     <input type="file" id="imageInput" accept="image/*" />
-
     <img id="preview" alt="Preview Foto Struk" />
 
-    <label for="numPeople">Jumlah Orang Patungan:</label>
-    <input type="number" id="numPeople" min="1" placeholder="Misalnya 3" />
+    <label>Daftar Menu Ditemukan (pilih untuk patungan):</label>
+    <div id="menuList">Belum ada menu...</div>
 
-    <button id="btnProcess" disabled>Hitung Patungan</button>
+    <label>Tambah Peserta dan Pilih Menu Pesanan:</label>
+    <input type="text" id="personName" placeholder="Nama peserta" />
+    <button id="addPersonBtn" disabled>Tambah Peserta</button>
+
+    <div id="personList">Belum ada peserta...</div>
+
+    <button id="calcBtn" disabled>Hitung Patungan</button>
 
     <div id="result"></div>
-
-    <label for="ocrText">Hasil OCR (mentah):</label>
-    <textarea id="ocrText" readonly></textarea>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.0.2/dist/tesseract.min.js"></script>
   <script>
     const imageInput = document.getElementById('imageInput');
     const preview = document.getElementById('preview');
-    const numPeopleInput = document.getElementById('numPeople');
-    const btnProcess = document.getElementById('btnProcess');
+    const menuListDiv = document.getElementById('menuList');
+    const personNameInput = document.getElementById('personName');
+    const addPersonBtn = document.getElementById('addPersonBtn');
+    const personListDiv = document.getElementById('personList');
+    const calcBtn = document.getElementById('calcBtn');
     const resultDiv = document.getElementById('result');
-    const ocrTextArea = document.getElementById('ocrText');
 
-    let selectedFile = null;
-
-    function updateButtonState() {
-      btnProcess.disabled = !selectedFile || !numPeopleInput.value || Number(numPeopleInput.value) <= 0;
-    }
+    let menuItems = []; // {id, name, price}
+    let persons = []; // {id, name, selectedMenuIds: []}
+    let menuIdCounter = 0;
+    let personIdCounter = 0;
 
     imageInput.addEventListener('change', () => {
-      selectedFile = imageInput.files[0] || null;
-      if(selectedFile) {
-        preview.src = URL.createObjectURL(selectedFile);
-      } else {
-        preview.src = '';
-      }
+      const file = imageInput.files[0];
+      if (!file) return;
+
+      preview.src = URL.createObjectURL(file);
+      menuItems = [];
+      persons = [];
+      personListDiv.innerHTML = 'Belum ada peserta...';
       resultDiv.textContent = '';
-      ocrTextArea.value = '';
-      updateButtonState();
-    });
+      menuListDiv.textContent = 'Membaca struk, tunggu...';
+      addPersonBtn.disabled = true;
+      calcBtn.disabled = true;
 
-    numPeopleInput.addEventListener('input', () => {
-      updateButtonState();
-    });
-
-    btnProcess.addEventListener('click', () => {
-      if (!selectedFile) return;
-      const numPeople = Number(numPeopleInput.value);
-      if (isNaN(numPeople) || numPeople <= 0) {
-        resultDiv.textContent = 'Mohon isi jumlah orang patungan dengan benar.';
-        return;
-      }
-
-      resultDiv.textContent = 'Membaca struk dari foto...';
-      ocrTextArea.value = '';
-
-      Tesseract.recognize(selectedFile, 'ind', { logger: m => console.log(m) })
+      Tesseract.recognize(file, 'ind', { logger: m => console.log(m) })
         .then(({ data: { text } }) => {
-          ocrTextArea.value = text;
-
-          const lines = text.split(/\r?\n/);
-
-          function cariTotal(lines) {
-            for (let i = 0; i < lines.length; i++) {
-              const lineLower = lines[i].toLowerCase();
-              if (lineLower.includes('total')) {
-                const regex = /total.*?([\d.,]+)/i;
-                const match = lines[i].match(regex);
-                if (match && match[1]) {
-                  const numStr = match[1].replace(/\./g, '').replace(',', '.');
-                  const val = parseFloat(numStr);
-                  if (!isNaN(val)) return val;
-                }
-                if (i + 1 < lines.length) {
-                  const nextMatch = lines[i+1].match(/[\d.,]+/);
-                  if (nextMatch) {
-                    const numStr = nextMatch[0].replace(/\./g, '').replace(',', '.');
-                    const val = parseFloat(numStr);
-                    if (!isNaN(val)) return val;
-                  }
-                }
-              }
-            }
-            return null;
-          }
-
-          const total = cariTotal(lines);
-
-          if (total && !isNaN(total)) {
-            const perPerson = total / numPeople;
-            resultDiv.textContent = `Total belanja: Rp ${total.toLocaleString('id-ID')}\nPatungan per orang: Rp ${perPerson.toLocaleString('id-ID')}`;
+          // Proses teks OCR untuk ekstrak menu + harga
+          menuItems = extractMenuItems(text);
+          if (menuItems.length === 0) {
+            menuListDiv.textContent = 'Gagal menemukan menu dengan harga.';
           } else {
-            resultDiv.textContent = "❌ Gagal menemukan total. Periksa hasil OCR di bawah.";
+            renderMenuList();
+            menuListDiv.scrollTop = 0;
+            addPersonBtn.disabled = false;
           }
         })
         .catch(err => {
-          resultDiv.textContent = "Gagal membaca gambar. Coba lagi.";
+          menuListDiv.textContent = 'Gagal membaca gambar.';
           console.error(err);
         });
     });
-  </script>
 
-  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.0.2/dist/tesseract.min.js"></script>
+    function extractMenuItems(text) {
+      const lines = text.split(/\r?\n/);
+      const items = [];
+      for (const line of lines) {
+        // Coba cari pola: nama menu di depan, angka harga di belakang
+        // Contoh: "Bakmi Ayam Oven Original 40.500"
+        const match = line.match(/(.+?)\s+([\d.,]{2,})$/);
+        if (match) {
+          let name = match[1].trim();
+          let priceStr = match[2].replace(/\./g, '').replace(',', '.');
+          let price = parseFloat(priceStr);
+          if (!isNaN(price)) {
+            items.push({ id: ++menuIdCounter, name, price });
+          }
+        }
+      }
+      return items;
+    }
+
+    function renderMenuList() {
+      if (menuItems.length === 0) {
+        menuListDiv.textContent = 'Belum ada menu...';
+        return;
+      }
+      menuListDiv.innerHTML = '';
+      for (const item of menuItems) {
+        const div = document.createElement('div');
+        div.className = 'menu-item';
+        div.innerHTML = `
+          <label>
+            <input type="checkbox" data-id="${item.id}" />
+            ${item.name} - Rp ${item.price.toLocaleString('id-ID')}
+          </label>
+        `;
+        menuListDiv.appendChild(div);
+      }
+    }
+
+    personNameInput.addEventListener('input', () => {
+      addPersonBtn.disabled = personNameInput.value.trim() === '';
+    });
+
+    addPersonBtn.addEventListener('click', () => {
+      const name = personNameInput.value.trim();
+      if (!name) return;
+      persons.push({ id: ++personIdCounter, name, selectedMenuIds: [] });
+      personNameInput.value = '';
+      addPersonBtn.disabled = true;
+      renderPersonList();
+      calcBtn.disabled = false;
+    });
+
+    function renderPersonList() {
+      if (persons.length === 0) {
+        personListDiv.textContent = 'Belum ada peserta...';
+        calcBtn.disabled = true;
+        return;
+      }
+      personListDiv.innerHTML = '';
+      for (const p of persons) {
+        const div = document.createElement('div');
+        div.className = 'person-item';
+
+        // Buat list checkbox menu untuk setiap orang
+        let menuCheckboxes = '';
+        for (const item of menuItems) {
+          const checked = p.selectedMenuIds.includes(item.id) ? 'checked' : '';
+          menuCheckboxes += `
+            <label style="margin-right:10px; cursor:pointer;">
+              <input type="checkbox" data-personid="${p.id}" data-menuid="${item.id}" ${checked} />
+              ${item.name}
+            </label>
+          `;
+        }
+
+        div.innerHTML = `
+          <div class="person-name">${p.name}</div>
+          <div class="person-menu-list">${menuCheckboxes}</div>
+        `;
+
+        personListDiv.appendChild(div);
+      }
+
+      // Pasang event listener ke checkbox menu orang
+      personListDiv.querySelectorAll('input[type=checkbox]').forEach(cb => {
+        cb.addEventListener('change', (e) => {
+          const personId = Number(e.target.getAttribute('data-personid'));
+          const menuId = Number(e.target.getAttribute('data-menuid'));
+          const person = persons.find(x => x.id === personId);
+          if (!person) return;
+
+          if (e.target.checked) {
+            if (!person.selectedMenuIds.includes(menuId)) {
+              person.selectedMenuIds.push(menuId);
+            }
+          } else {
+            person.selectedMenuIds = person.selectedMenuIds.filter(id => id !== menuId);
+          }
+        });
+      });
+    }
+
+    calcBtn.addEventListener('click', () => {
+      if (persons.length === 0) {
+        alert('Tambahkan peserta dulu.');
+        return;
+      }
+      // Hitung total patungan per orang
+      let results = '';
+      for (const p of persons) {
+        if (p.selectedMenuIds.length === 0) {
+          results += `${p.name}: Tidak memesan apapun\n`;
+          continue;
+        }
+        let total = 0;
+        for (const menuId of p.selectedMenuIds) {
+          const item = menuItems.find(x => x.id === menuId);
+          if (item) total += item.price;
+        }
+        results += `${p.name}: Rp ${total.toLocaleString('id-ID')}\n`;
+      }
+      resultDiv.textContent = results;
+    });
+  </script>
 </body>
 </html>
