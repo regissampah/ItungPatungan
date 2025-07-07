@@ -93,15 +93,15 @@
   <div id="menuList"></div>
 
   <div class="form-group">
-    <label>Ongkir: </label><br>
+    <label>Delivery Fee: </label><br>
     <input type="number" id="ongkir" value="0" />
   </div>
   <div class="form-group">
-    <label>Fee Lain: </label><br>
+    <label>Order Fee: </label><br>
     <input type="number" id="fee" value="0" />
   </div>
   <div class="form-group">
-    <label>Diskon: </label><br>
+    <label>Disc: </label><br>
     <input type="number" id="diskon" value="0" />
   </div>
 
@@ -142,7 +142,7 @@
             menuContainer.innerHTML += itemHTML;
           }
 
-          // Auto-fill diskon dan ongkir jika bisa dikenali
+          // Auto-fill disc / delivery fee
           if (/disc|discount/i.test(line)) {
             const val = line.match(/[-]?\d{2,5}[.,]?\d{0,3}/);
             if (val) document.getElementById("diskon").value = parseInt(val[0].replace('.', '').replace(',', ''));
