@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <title>Hitung Patungan dari Foto Struk (Smart Scan)</title>
+  <meta charset="UTF-8" />
+  <title>Hitung Patungan dari Foto Struk (Fix Khusus)</title>
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.0.2/dist/tesseract.min.js"></script>
   <style>
     body { font-family: sans-serif; padding: 20px; max-width: 600px; margin: auto; }
@@ -14,7 +14,7 @@
   </style>
 </head>
 <body>
-  <h2>Hitung Patungan dari Foto Struk (Smart Scan)</h2>
+  <h2>Hitung Patungan dari Foto Struk (Fix Khusus)</h2>
 
   <label>Upload Foto Struk (.jpg/.png):</label>
   <input type="file" id="imageInput" accept="image/*" />
@@ -53,26 +53,25 @@
       resultDiv.innerText = "Membaca struk dari foto...";
       ocrTextArea.value = "";
 
-      Tesseract.recognize(image, 'ind', {
-        logger: m => console.log(m)
-      }).then(({ data: { text } }) => {
+      Tesseract.recognize(image, 'ind', { logger: m => console.log(m) }).then(({ data: { text } }) => {
         ocrTextArea.value = text;
 
+        const lines = text.split(/\r?\n/);
         let total = null;
-        const lines = text.split(/\\r?\\n/);
 
-        for (let i = 0; i < lines.length; i++) {
-          const line = lines[i].toLowerCase();
-          if (line.includes("total")) {
-            // Coba cari angka di baris yang sama
-            let match = lines[i].match(/([\\d.,]+)/);
+        for(let i = 0; i < lines.length; i++) {
+          const lineLower = lines[i].toLowerCase();
+          if(lineLower.includes('total')) {
+            // cari angka di baris total dulu
+            let match = lines[i].match(/[\d.,]+/);
             if (!match && i + 1 < lines.length) {
-              // Kalau tidak ada, coba cari di baris berikutnya
-              match = lines[i + 1].match(/([\\d.,]+)/);
+              // jika tidak ditemukan, coba di baris berikutnya
+              match = lines[i+1].match(/[\d.,]+/);
             }
-
-            if (match) {
-              total = parseFloat(match[1].replace('.', '').replace(',', '.'));
+            if(match) {
+              // bersihkan angka: hilangkan titik, ganti koma dengan titik untuk decimal
+              const numStr = match[0].replace(/\./g, '').replace(',', '.');
+              total = parseFloat(numStr);
               break;
             }
           }
@@ -80,9 +79,9 @@
 
         if (total && !isNaN(total)) {
           const perPerson = total / numPeople;
-          resultDiv.innerText = `✅ Total belanja: Rp ${total.toLocaleString("id-ID")}\n💸 Patungan per orang: Rp ${perPerson.toLocaleString("id-ID")}`;
+          resultDiv.innerText = `Total belanja: Rp ${total.toLocaleString('id-ID')}\nPatungan per orang: Rp ${perPerson.toLocaleString('id-ID')}`;
         } else {
-          resultDiv.innerText = "❌ Masih gagal menemukan angka setelah 'Total'. Periksa teks mentah di bawah.";
+          resultDiv.innerText = "❌ Gagal menemukan total yang valid. Periksa teks mentah di bawah.";
         }
       }).catch(err => {
         resultDiv.innerText = "Gagal membaca gambar. Coba lagi.";
