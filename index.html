@@ -1,188 +1,74 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Patungan Makanan Otomatis</title>
-  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.0.4/dist/tesseract.min.js"></script>
+  <meta charset="UTF-8">
+  <title>Kalkulator Patungan</title>
   <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #f9f9f9;
-      color: #333;
-      max-width: 800px;
-      margin: auto;
-      padding: 2rem;
-    }
-    h2 {
-      margin-bottom: 1rem;
-      font-weight: 600;
-    }
-    input[type="file"], input[type="number"] {
-      padding: 0.5rem;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      margin-top: 0.5rem;
-    }
-    .menu-item {
-      display: flex;
-      justify-content: space-between;
-      gap: 1rem;
-      padding: 0.75rem;
-      margin-top: 0.5rem;
-      background: #fff;
-      border-radius: 8px;
-      box-shadow: 0 0 4px rgba(0,0,0,0.06);
-      align-items: center;
-    }
-    label {
-      font-size: 0.95rem;
-    }
-    img {
-      width: 100%;
-      max-height: 300px;
-      object-fit: contain;
-      margin-top: 1rem;
-      border-radius: 8px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    }
-    .form-group {
-      margin-top: 1.2rem;
-    }
-    button {
-      margin-top: 1.5rem;
-      padding: 0.75rem 1.5rem;
-      font-size: 1rem;
-      border: none;
-      border-radius: 8px;
-      background-color: #3b82f6;
-      color: #fff;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #2563eb;
-    }
-    #hasilPatungan {
-      margin-top: 2rem;
-      background: #fff;
-      padding: 1rem;
-      border-radius: 8px;
-      box-shadow: 0 0 8px rgba(0,0,0,0.05);
-    }
-    ul {
-      padding-left: 1.5rem;
-    }
-    @media (max-width: 600px) {
-      .menu-item {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-    }
+    body { font-family: sans-serif; padding: 20px; }
+    input { margin: 5px; padding: 5px; }
+    .person { margin-bottom: 10px; }
+    button { padding: 8px 12px; }
   </style>
 </head>
 <body>
-  <h2>Patungan Otomatis dari Struk</h2>
+  <h2>💸 Kalkulator Patungan dari Struk</h2>
 
-  <div class="form-group">
-    <label for="struk">Upload Struk (gambar):</label><br>
-    <input type="file" accept="image/*" id="struk" onchange="readImage(event)" />
-  </div>
-  <img id="preview" alt="Preview Struk"><br>
-  <p id="loading"></p>
+  <div id="people"></div>
 
-  <div id="menuList"></div>
+  <button onclick="addPerson()">+ Tambah Item</button>
+  <hr>
 
-  <div class="form-group">
-    <label>Delivery Fee: </label><br>
-    <input type="number" id="ongkir" value="0" />
-  </div>
-  <div class="form-group">
-    <label>Order Fee: </label><br>
-    <input type="number" id="fee" value="0" />
-  </div>
-  <div class="form-group">
-    <label>Disc: </label><br>
-    <input type="number" id="diskon" value="0" />
-  </div>
+  <label>Subtotal: <input type="number" id="subtotal" value="97601"></label><br>
+  <label>Tax & Biaya Lain: <input type="number" id="extraFees" value="16873"></label><br>
+  <label>Total Diskon: <input type="number" id="discount" value="26400"></label><br>
+  <button onclick="hitung()">💰 Hitung Patungan</button>
 
-  <button onclick="hitung()">Hitung Patungan</button>
-
-  <div id="hasilPatungan"></div>
+  <h3>💳 Hasil:</h3>
+  <div id="result"></div>
 
   <script>
-    function readImage(event) {
-      const img = document.getElementById("preview");
-      img.src = URL.createObjectURL(event.target.files[0]);
+    const peopleDiv = document.getElementById("people");
 
-      document.getElementById("loading").innerText = "🔍 Membaca struk...";
-      Tesseract.recognize(event.target.files[0], 'eng', {
-        logger: m => console.log(m)
-      }).then(({ data: { text } }) => {
-        document.getElementById("loading").innerText = "";
-        const lines = text.split('\n').map(l => l.trim()).filter(l => l);
-        const menuContainer = document.getElementById("menuList");
-        menuContainer.innerHTML = '';
-
-        lines.forEach(line => {
-          const match = line.match(/(.+?)\s+(\d{2,3}[.,]?\d{0,3})$/);
-          if (match) {
-            const nama = match[1];
-            const harga = match[2].replace('.', '').replace(',', '');
-            const itemHTML = `
-              <div class="menu-item">
-                <div>
-                  <strong>${nama}</strong> — Rp${harga}
-                  <input type="hidden" value="${harga}" class="harga">
-                </div>
-                <div>
-                  <label>Jumlah orang:</label>
-                  <input type="number" placeholder="0" class="jumlah" min="1">
-                </div>
-              </div>`;
-            menuContainer.innerHTML += itemHTML;
-          }
-
-          // Auto-fill disc / delivery fee
-          if (/disc|discount/i.test(line)) {
-            const val = line.match(/[-]?\d{2,5}[.,]?\d{0,3}/);
-            if (val) document.getElementById("diskon").value = parseInt(val[0].replace('.', '').replace(',', ''));
-          }
-          if (/delivery|ongkir/i.test(line)) {
-            const val = line.match(/\d{2,5}[.,]?\d{0,3}/);
-            if (val) document.getElementById("ongkir").value = parseInt(val[0].replace('.', '').replace(',', ''));
-          }
-        });
-      });
+    function addPerson(name = '', price = '') {
+      const div = document.createElement('div');
+      div.className = 'person';
+      div.innerHTML = `
+        <input type="text" placeholder="Nama" value="${name}">
+        <input type="number" placeholder="Harga" value="${price}">
+        <button onclick="this.parentElement.remove()">❌</button>
+      `;
+      peopleDiv.appendChild(div);
     }
 
+    // Preload dari struk
+    addPerson("Kopsu Coco", 20900);
+    addPerson("Black Tea Machiato", 18900);
+    addPerson("Americano", 29901);
+    addPerson("Aero Berrycano", 27900);
+
     function hitung() {
-      const hargaList = Array.from(document.querySelectorAll(".harga")).map(h => parseInt(h.value));
-      const orangList = Array.from(document.querySelectorAll(".jumlah")).map(j => parseInt(j.value) || 0);
+      const people = Array.from(document.querySelectorAll(".person"));
+      const subtotal = parseFloat(document.getElementById("subtotal").value);
+      const extraFees = parseFloat(document.getElementById("extraFees").value);
+      const discount = parseFloat(document.getElementById("discount").value);
+      const totalHarga = subtotal;
 
-      const ongkir = parseInt(document.getElementById("ongkir").value) || 0;
-      const fee = parseInt(document.getElementById("fee").value) || 0;
-      const diskon = parseInt(document.getElementById("diskon").value) || 0;
+      const resultDiv = document.getElementById("result");
+      resultDiv.innerHTML = "";
 
-      const totalMenu = hargaList.reduce((a, b) => a + b, 0);
-      const totalOrang = orangList.reduce((a, b) => a + b, 0);
-      const totalBayar = totalMenu + ongkir + fee - diskon;
+      let totalProporsi = 0;
+      const data = people.map(p => {
+        const name = p.querySelector("input[type='text']").value;
+        const price = parseFloat(p.querySelector("input[type='number']").value);
+        totalProporsi += price;
+        return { name, price };
+      });
 
-      if (totalOrang === 0) {
-        document.getElementById("hasilPatungan").innerText = "⚠️ Isi jumlah orang yang memesan.";
-        return;
-      }
-
-      let hasil = "<h3>Hasil Pembagian:</h3><ul>";
-      for (let i = 0; i < hargaList.length; i++) {
-        if (orangList[i] > 0) {
-          const proporsi = hargaList[i] / totalMenu;
-          const bagian = totalBayar * proporsi;
-          const perOrang = bagian / orangList[i];
-          hasil += `<li>Menu ${i + 1} → ${orangList[i]} orang × <strong>Rp${perOrang.toFixed(0)}</strong></li>`;
-        }
-      }
-      hasil += "</ul>";
-      document.getElementById("hasilPatungan").innerHTML = hasil;
+      data.forEach(p => {
+        const proporsi = p.price / totalProporsi;
+        const biaya = (p.price + proporsi * extraFees - proporsi * discount).toFixed(0);
+        resultDiv.innerHTML += `<p><strong>${p.name}</strong>: Rp ${Number(biaya).toLocaleString('id-ID')}</p>`;
+      });
     }
   </script>
 </body>
