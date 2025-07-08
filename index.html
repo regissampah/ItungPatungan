@@ -2,7 +2,8 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <title>Kalkulator Patungan Per Orang</title>
+  <title>Kalkulator Patungan + OCR Struk</title>
+  <script src="https://unpkg.com/tesseract.js@4.0.2/dist/tesseract.min.js"></script>
   <style>
     body { font-family: sans-serif; padding: 20px; max-width: 700px; margin: auto; }
     input { margin: 5px 0; padding: 5px; width: 120px; }
@@ -12,24 +13,25 @@
   </style>
 </head>
 <body>
-  <h2>💸 Kalkulator Patungan Per Orang</h2>
+  <h2>💸 Kalkulator Patungan + Upload Struk OCR</h2>
+
+  <input type="file" accept="image/*" onchange="prosesStruk(event)">
+  <p><em>Upload gambar struk, dan sistem akan menambahkan item otomatis.</em></p>
 
   <div id="people"></div>
   <button onclick="addPerson()">+ Tambah Item</button>
 
   <hr>
-  <label>Total Bayar Akhir (setelah diskon & biaya): <input type="number" id="finalTotal"></label><br>
+  <label>Total Bayar Akhir: <input type="number" id="finalTotal"></label><br>
   <button onclick="hitung()">💰 Hitung Patungan</button>
 
   <h3>💳 Hasil Patungan:</h3>
   <div id="result"></div>
   <button onclick="location.reload()">🔄 Reset</button>
-  <a id="waShare" href="#" target="_blank" style="display:none; margin-left: 10px;">📤 Share via WhatsApp</a>
 
   <script>
     const peopleDiv = document.getElementById("people");
     const resultDiv = document.getElementById("result");
-    const waShareLink = document.getElementById("waShare");
 
     function addPerson(name = '', price = '', orang = '1') {
       const div = document.createElement('div');
@@ -43,15 +45,10 @@
       peopleDiv.appendChild(div);
     }
 
-    // Awalnya 1 baris kosong
-    addPerson();
-
     function hitung() {
       const people = Array.from(document.querySelectorAll(".person"));
       const totalBayar = parseFloat(document.getElementById("finalTotal").value);
       resultDiv.innerHTML = "";
-      waShareLink.style.display = "none";
-
       if (isNaN(totalBayar) || totalBayar <= 0) {
         alert("Masukkan total bayar yang valid!");
         return;
@@ -69,7 +66,6 @@
 
       const totalHarga = itemList.reduce((sum, item) => sum + item.price, 0);
       let totalHitung = 0;
-      let waText = "💳 *Hasil Patungan:*\n";
 
       itemList.forEach((item, i) => {
         const proporsi = item.price / totalHarga;
@@ -77,18 +73,29 @@
           ? Math.round(totalBayar - totalHitung)
           : Math.round(proporsi * totalBayar);
         totalHitung += bayar;
-
         resultDiv.innerHTML += `<p><strong>${item.name}</strong>: Rp ${bayar.toLocaleString('id-ID')}</p>`;
-        waText += `• ${item.name}: Rp ${bayar.toLocaleString('id-ID')}\n`;
       });
 
       resultDiv.innerHTML += `<hr><p><strong>Total Cek:</strong> Rp ${totalHitung.toLocaleString('id-ID')}</p>`;
-      waText += `\nTotal Cek: Rp ${totalHitung.toLocaleString('id-ID')}`;
+    }
 
-      // Share WhatsApp
-      const waURL = "https://wa.me/?text=" + encodeURIComponent(waText);
-      waShareLink.href = waURL;
-      waShareLink.style.display = "inline-block";
+    async function prosesStruk(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      resultDiv.innerHTML = "<p>🔍 Memproses gambar struk... Harap tunggu.</p>";
+      const worker = await Tesseract.createWorker('eng');
+      const { data: { text } } = await worker.recognize(file);
+      resultDiv.innerHTML = "";
+
+      const lines = text.split('\n').filter(l => /\d/.test(l));
+      lines.forEach(line => {
+        const match = line.match(/(.+?)\s+(\d+[.,]?\d*)$/);
+        if (match) {
+          const name = match[1].trim();
+          const price = parseInt(match[2].replace(/[^\d]/g, ''));
+          if (!isNaN(price)) addPerson(name, price, 1);
+        }
+      });
     }
   </script>
 </body>
