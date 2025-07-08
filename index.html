@@ -100,4 +100,102 @@
   </style>
 </head>
 <body>
-  <!-- Rest of HTML & JS remains same -->
+  <div class="container">
+    <h2>Kalkulator Patungan</h2>
+    <input type="file" id="upload" accept="image/*">
+    <div id="items"></div>
+
+    <h3>Orang yang Patungan</h3>
+    <div id="people">
+      <div class="person">
+        <input type="text" placeholder="Nama" class="nama">
+        <input type="number" placeholder="Jumlah item" class="jumlah-orang" value="1">
+        <button onclick="hapusOrang(this)">Hapus</button>
+      </div>
+    </div>
+    <button onclick="tambahOrang()">+ Tambah Orang</button>
+    <hr>
+    <button onclick="hitungPatungan()">Hitung Patungan</button>
+    <button onclick="location.reload()">🔄 Reset</button>
+    <div id="result"></div>
+    <div id="share"></div>
+  </div>
+  <script>
+    const itemsContainer = document.getElementById("items");
+    const resultContainer = document.getElementById("result");
+    const shareContainer = document.getElementById("share");
+
+    document.getElementById("upload").addEventListener("change", function () {
+      const file = this.files[0];
+      if (!file) return;
+      Tesseract.recognize(file, 'eng').then(({ data: { text } }) => {
+        const lines = text.split("\n").filter(l => l.trim());
+        itemsContainer.innerHTML = "";
+        for (let line of lines) {
+          const match = line.match(/(.+?)\s+(\d{1,3}(?:\.\d{3})*|\d+)/);
+          if (match) {
+            const namaItem = match[1].replace(/\b\d+\s*[xX]\b/g, '').trim();
+            const harga = match[2].replace(/\./g, "").replace(",", ".");
+            itemsContainer.innerHTML += `
+              <div class="person">
+                <input type="text" value="${namaItem}">
+                <input type="number" placeholder="Harga" value="${harga}">
+              </div>
+            `;
+          }
+        }
+      });
+    });
+
+    function tambahOrang() {
+      const div = document.createElement("div");
+      div.className = "person";
+      div.innerHTML = `
+        <input type="text" placeholder="Nama" class="nama">
+        <input type="number" placeholder="Jumlah item" class="jumlah-orang" value="1">
+        <button onclick="hapusOrang(this)">Hapus</button>
+      `;
+      document.getElementById("people").appendChild(div);
+    }
+
+    function hapusOrang(btn) {
+      btn.parentElement.remove();
+    }
+
+    function hitungPatungan() {
+      const orangInputs = document.querySelectorAll("#people .person");
+      const items = document.querySelectorAll("#items .person");
+      let hargaTotal = 0;
+      let hargaPerItem = [];
+
+      items.forEach(item => {
+        const harga = parseFloat(item.children[1].value);
+        hargaTotal += harga;
+        hargaPerItem.push(harga);
+      });
+
+      let totalOrang = 0;
+      let distribusi = [];
+
+      orangInputs.forEach(orang => {
+        const nama = orang.querySelector(".nama").value || "Anonim";
+        const jml = parseInt(orang.querySelector(".jumlah-orang").value);
+        totalOrang += jml;
+        distribusi.push({ nama, jml });
+      });
+
+      let result = `<h3>Total: Rp${hargaTotal.toLocaleString("id-ID")}</h3><ul>`;
+      distribusi.forEach(o => {
+        const proporsi = o.jml / totalOrang;
+        const bayar = Math.round(hargaTotal * proporsi);
+        result += `<li>${o.nama} bayar Rp${bayar.toLocaleString("id-ID")}</li>`;
+      });
+      result += "</ul>";
+      resultContainer.innerHTML = result;
+
+      const waText = encodeURIComponent(result.replace(/<[^>]+>/g, ""));
+      shareContainer.innerHTML = `<a id="waShare" href="https://wa.me/?text=${waText}" target="_blank">Share ke WhatsApp</a>`;
+    }
+  </script>
+</body>
+</html>
