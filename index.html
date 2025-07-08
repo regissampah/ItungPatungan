@@ -2,17 +2,17 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <title>Kalkulator Patungan Fix</title>
+  <title>Kalkulator Patungan Per Orang</title>
   <style>
-    body { font-family: sans-serif; padding: 20px; max-width: 600px; margin: auto; }
-    input { margin: 5px; padding: 5px; width: 120px; }
-    .person { margin-bottom: 10px; }
+    body { font-family: sans-serif; padding: 20px; max-width: 700px; margin: auto; }
+    input { margin: 5px; padding: 5px; width: 110px; }
+    .person { margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
     button { padding: 6px 12px; margin-top: 10px; }
     hr { margin: 20px 0; }
   </style>
 </head>
 <body>
-  <h2>💸 Kalkulator Patungan (Rp79.201 fix)</h2>
+  <h2>💸 Kalkulator Patungan Per Orang (Total Fix Rp79.201)</h2>
 
   <div id="people"></div>
   <button onclick="addPerson()">+ Tambah Item</button>
@@ -27,22 +27,23 @@
   <script>
     const peopleDiv = document.getElementById("people");
 
-    function addPerson(name = '', price = '') {
+    function addPerson(name = '', price = '', orang = '1') {
       const div = document.createElement('div');
       div.className = 'person';
       div.innerHTML = `
         <input type="text" placeholder="Nama Menu" value="${name}">
         <input type="number" placeholder="Harga (Rp)" value="${price}">
+        <label>👥 <input type="number" min="1" value="${orang}" style="width:50px"> org</label>
         <button onclick="this.parentElement.remove()">❌</button>
       `;
       peopleDiv.appendChild(div);
     }
 
     // Preload data dari struk
-    addPerson("Kopsu Coco", 20900);
-    addPerson("Black Tea Machiato", 18900);
-    addPerson("Americano", 29901);
-    addPerson("Aero Berrycano", 27900);
+    addPerson("Kopsu Coco", 20900, 1);
+    addPerson("Black Tea Machiato", 18900, 1);
+    addPerson("Americano", 29901, 1);
+    addPerson("Aero Berrycano", 27900, 1);
 
     function hitung() {
       const people = Array.from(document.querySelectorAll(".person"));
@@ -50,22 +51,28 @@
       const resultDiv = document.getElementById("result");
       resultDiv.innerHTML = "";
 
-      let totalHarga = 0;
-      const data = people.map(p => {
+      // Ubah data: harga dibagi jumlah orang
+      let itemList = [];
+      people.forEach(p => {
         const name = p.querySelector("input[type='text']").value;
         const price = parseFloat(p.querySelector("input[type='number']").value);
-        totalHarga += price;
-        return { name, price };
+        const jumlahOrang = parseInt(p.querySelector("input[type='number']:nth-of-type(2)").value);
+        for (let i = 0; i < jumlahOrang; i++) {
+          itemList.push({ name: name + (jumlahOrang > 1 ? ` (Orang ${i+1})` : ""), price: price / jumlahOrang });
+        }
       });
 
+      // Hitung total & proporsi
+      const totalHarga = itemList.reduce((sum, item) => sum + item.price, 0);
       let totalHitung = 0;
-      data.forEach((p, i) => {
-        const proporsi = p.price / totalHarga;
-        let bayar = (i === data.length - 1)
-          ? Math.round(totalBayar - totalHitung) // biar pas total
+
+      itemList.forEach((item, i) => {
+        const proporsi = item.price / totalHarga;
+        let bayar = (i === itemList.length - 1)
+          ? Math.round(totalBayar - totalHitung)
           : Math.round(proporsi * totalBayar);
         totalHitung += bayar;
-        resultDiv.innerHTML += `<p><strong>${p.name}</strong>: Rp ${bayar.toLocaleString('id-ID')}</p>`;
+        resultDiv.innerHTML += `<p><strong>${item.name}</strong>: Rp ${bayar.toLocaleString('id-ID')}</p>`;
       });
 
       resultDiv.innerHTML += `<hr><p><strong>Total Cek:</strong> Rp ${totalHitung.toLocaleString('id-ID')}</p>`;
