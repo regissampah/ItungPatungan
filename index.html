@@ -50,11 +50,16 @@
       gap: 8px;
       margin-bottom: 10px;
     }
-    .person input {
-      flex: 1 1 40%;
+    .person input[name="harga[]"] {
+      max-width: 100px;
     }
-    .person .jumlah-orang {
-      width: 60px;
+    .person input.jumlah-orang {
+      max-width: 60px;
+    }
+    .person button {
+      padding: 6px;
+      font-size: 14px;
+      max-width: 40px;
     }
     .theme-toggle {
       position: fixed;
@@ -76,13 +81,15 @@
         flex-direction: column;
       }
       .person input,
-      .person .jumlah-orang {
+      .person .jumlah-orang,
+      .person button {
         width: 100%;
+        max-width: 100%;
       }
     }
   </style>
 </head>
-<body>
+<body data-theme="light">
   <button class="theme-toggle" onclick="toggleTheme()">🌓</button>
   <div class="container">
     <h2>💸 Kalkulator Patungan + Upload Struk OCR</h2>
@@ -134,7 +141,7 @@
       let itemList = [];
       people.forEach(p => {
         const name = p.querySelector("input[type='text']").value || "Item Tanpa Nama";
-        const price = parseFloat(p.querySelector("input[type='number']").value) || 0;
+        const price = parseFloat(p.querySelector("input[name='harga[]']").value) || 0;
         const jumlahOrang = parseInt(p.querySelector(".jumlah-orang").value) || 1;
         for (let i = 0; i < jumlahOrang; i++) {
           itemList.push({ name: name + (jumlahOrang > 1 ? ` (Orang ${i+1})` : ""), price: price / jumlahOrang });
