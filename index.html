@@ -12,7 +12,7 @@
   </style>
 </head>
 <body>
-  <h2>💸 Kalkulator Patungan Per Orang (Total Fix Rp79.201)</h2>
+  <h2>💸 Kalkulator Patungan Per Orang (Fix Rp79.201)</h2>
 
   <div id="people"></div>
   <button onclick="addPerson()">+ Tambah Item</button>
@@ -33,7 +33,7 @@
       div.innerHTML = `
         <input type="text" placeholder="Nama Menu" value="${name}">
         <input type="number" placeholder="Harga (Rp)" value="${price}">
-        <label>👥 <input type="number" min="1" value="${orang}" style="width:50px"> org</label>
+        <label>👥 <input type="number" class="jumlah-orang" min="1" value="${orang}" style="width:50px"> org</label>
         <button onclick="this.parentElement.remove()">❌</button>
       `;
       peopleDiv.appendChild(div);
@@ -51,18 +51,16 @@
       const resultDiv = document.getElementById("result");
       resultDiv.innerHTML = "";
 
-      // Ubah data: harga dibagi jumlah orang
       let itemList = [];
       people.forEach(p => {
         const name = p.querySelector("input[type='text']").value;
         const price = parseFloat(p.querySelector("input[type='number']").value);
-        const jumlahOrang = parseInt(p.querySelector("input[type='number']:nth-of-type(2)").value);
+        const jumlahOrang = parseInt(p.querySelector(".jumlah-orang").value);
         for (let i = 0; i < jumlahOrang; i++) {
           itemList.push({ name: name + (jumlahOrang > 1 ? ` (Orang ${i+1})` : ""), price: price / jumlahOrang });
         }
       });
 
-      // Hitung total & proporsi
       const totalHarga = itemList.reduce((sum, item) => sum + item.price, 0);
       let totalHitung = 0;
 
