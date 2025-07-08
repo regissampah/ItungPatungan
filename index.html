@@ -5,20 +5,20 @@
   <title>Kalkulator Patungan Per Orang</title>
   <style>
     body { font-family: sans-serif; padding: 20px; max-width: 700px; margin: auto; }
-    input { margin: 5px; padding: 5px; width: 110px; }
-    .person { margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
+    input { margin: 5px 0; padding: 5px; width: 120px; }
+    .person { margin-bottom: 8px; display: flex; align-items: center; gap: 10px; }
     button { padding: 6px 12px; margin-top: 10px; }
     hr { margin: 20px 0; }
   </style>
 </head>
 <body>
-  <h2>💸 Kalkulator Patungan Per Orang (Fix Rp79.201)</h2>
+  <h2>💸 Kalkulator Patungan Per Orang</h2>
 
   <div id="people"></div>
   <button onclick="addPerson()">+ Tambah Item</button>
 
   <hr>
-  <label>Total Bayar Final (setelah diskon & biaya): <input type="number" id="finalTotal" value="79201"></label><br>
+  <label>Total Bayar Akhir (setelah diskon & biaya): <input type="number" id="finalTotal" value="79201"></label><br>
   <button onclick="hitung()">💰 Hitung Patungan</button>
 
   <h3>💳 Hasil Patungan:</h3>
@@ -32,18 +32,15 @@
       div.className = 'person';
       div.innerHTML = `
         <input type="text" placeholder="Nama Menu" value="${name}">
-        <input type="number" placeholder="Harga (Rp)" value="${price}">
-        <label>👥 <input type="number" class="jumlah-orang" min="1" value="${orang}" style="width:50px"> org</label>
+        <input type="number" placeholder="Harga" value="${price}">
+        <input type="number" class="jumlah-orang" placeholder="Orang" min="1" value="${orang}" style="width:60px">
         <button onclick="this.parentElement.remove()">❌</button>
       `;
       peopleDiv.appendChild(div);
     }
 
-    // Preload data dari struk
-    addPerson("Kopsu Coco", 20900, 1);
-    addPerson("Black Tea Machiato", 18900, 1);
-    addPerson("Americano", 29901, 1);
-    addPerson("Aero Berrycano", 27900, 1);
+    // Awalnya 1 baris kosong
+    addPerson();
 
     function hitung() {
       const people = Array.from(document.querySelectorAll(".person"));
@@ -53,9 +50,9 @@
 
       let itemList = [];
       people.forEach(p => {
-        const name = p.querySelector("input[type='text']").value;
-        const price = parseFloat(p.querySelector("input[type='number']").value);
-        const jumlahOrang = parseInt(p.querySelector(".jumlah-orang").value);
+        const name = p.querySelector("input[type='text']").value || "Item Tanpa Nama";
+        const price = parseFloat(p.querySelector("input[type='number']").value) || 0;
+        const jumlahOrang = parseInt(p.querySelector(".jumlah-orang").value) || 1;
         for (let i = 0; i < jumlahOrang; i++) {
           itemList.push({ name: name + (jumlahOrang > 1 ? ` (Orang ${i+1})` : ""), price: price / jumlahOrang });
         }
