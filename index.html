@@ -3,32 +3,105 @@
 <head>
   <meta charset="UTF-8">
   <title>Kalkulator Patungan + OCR Struk</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@2/dist/tesseract.min.js"></script>
   <style>
-    body { font-family: sans-serif; padding: 20px; max-width: 700px; margin: auto; }
-    input { margin: 5px 0; padding: 5px; width: 120px; }
-    .person { margin-bottom: 8px; display: flex; align-items: center; gap: 10px; }
-    button { padding: 6px 12px; margin-top: 10px; }
-    hr { margin: 20px 0; }
+    :root {
+      --bg: #ffffff;
+      --text: #000000;
+      --card: #f9f9f9;
+      --input: #f0f0f0;
+    }
+    [data-theme="dark"] {
+      --bg: #1e1e1e;
+      --text: #f0f0f0;
+      --card: #2e2e2e;
+      --input: #3e3e3e;
+    }
+    body {
+      font-family: sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      max-width: 700px;
+      margin: auto;
+      background: var(--card);
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.05);
+    }
+    input, button {
+      font-family: inherit;
+      margin: 5px 0;
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      width: 100%;
+      background: var(--input);
+      color: var(--text);
+      box-sizing: border-box;
+    }
+    .person {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .person input {
+      flex: 1 1 40%;
+    }
+    .person .jumlah-orang {
+      width: 60px;
+    }
+    .theme-toggle {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      z-index: 10;
+    }
+    #waShare {
+      background: #25D366;
+      color: white;
+      padding: 8px 12px;
+      text-decoration: none;
+      display: inline-block;
+      border-radius: 6px;
+      margin-top: 10px;
+    }
+    @media (max-width: 600px) {
+      .person {
+        flex-direction: column;
+      }
+      .person input,
+      .person .jumlah-orang {
+        width: 100%;
+      }
+    }
   </style>
 </head>
 <body>
-  <h2>💸 Kalkulator Patungan + Upload Struk OCR</h2>
+  <button class="theme-toggle" onclick="toggleTheme()">🌓</button>
+  <div class="container">
+    <h2>💸 Kalkulator Patungan + Upload Struk OCR</h2>
 
-  <input type="file" accept="image/*" onchange="prosesStruk(event)">
-  <p><em>Upload gambar struk, dan sistem akan menambahkan item otomatis.</em></p>
+    <input type="file" accept="image/*" onchange="prosesStruk(event)">
+    <p><em>Upload gambar struk, dan sistem akan menambahkan item otomatis.</em></p>
 
-  <div id="people"></div>
-  <button onclick="addPerson()">+ Tambah Item</button>
+    <div id="people"></div>
+    <button onclick="addPerson()">+ Tambah Item</button>
 
-  <hr>
-  <label>Total Bayar Akhir: <input type="number" id="finalTotal" autocomplete="off" inputmode="numeric"></label><br>
-  <button onclick="hitung()">💰 Hitung Patungan</button>
+    <hr>
+    <label>Total Bayar Akhir:<br><input type="number" id="finalTotal" autocomplete="off" inputmode="numeric"></label><br>
+    <button onclick="hitung()">💰 Hitung Patungan</button>
 
-  <h3>💳 Hasil Patungan:</h3>
-  <div id="result"></div>
-  <button onclick="location.reload()">🔄 Reset</button>
-  <a id="waShare" href="#" target="_blank" style="display:none; margin-left: 10px;">📤 Share via WhatsApp</a>
+    <h3>💳 Hasil Patungan:</h3>
+    <div id="result"></div>
+    <button onclick="location.reload()">🔄 Reset</button>
+    <a id="waShare" href="#" target="_blank" style="display:none;">📤 Share via WhatsApp</a>
+  </div>
 
   <script>
     const peopleDiv = document.getElementById("people");
@@ -41,7 +114,7 @@
       div.innerHTML = `
         <input type="text" name="menu[]" placeholder="Nama Menu" value="${name}" autocomplete="new-password">
         <input type="number" name="harga[]" placeholder="Harga" value="${price}" autocomplete="new-password">
-        <input type="number" class="jumlah-orang" name="jumlah[]" title="Jumlah orang" min="1" value="${orang}" style="width:60px" inputmode="numeric" autocomplete="new-password">
+        <input type="number" class="jumlah-orang" name="jumlah[]" title="Jumlah orang" min="1" value="${orang}" inputmode="numeric" autocomplete="new-password">
         <button onclick="this.parentElement.remove()">❌</button>
       `;
       peopleDiv.appendChild(div);
@@ -138,6 +211,12 @@
         });
       };
       reader.readAsDataURL(resizedBlob);
+    }
+
+    function toggleTheme() {
+      const html = document.documentElement;
+      const current = html.getAttribute("data-theme");
+      html.setAttribute("data-theme", current === "dark" ? "light" : "dark");
     }
   </script>
 </body>
