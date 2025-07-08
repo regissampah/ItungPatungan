@@ -2,148 +2,33 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Kalkulator Patungan + OCR Struk</title>
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@2/dist/tesseract.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <style>
-    :root {
-      --bg-color: #ffffff;
-      --text-color: #111;
-      --input-bg: #f0f0f0;
-      --card-bg: #ffffff;
-      --border-color: #ddd;
-    }
-
-    [data-theme="dark"] {
-      --bg-color: #111827;
-      --text-color: #f9fafb;
-      --input-bg: #1f2937;
-      --card-bg: #1f2937;
-      --border-color: #374151;
-    }
-
-    body {
-      font-family: 'Inter', sans-serif;
-      background-color: var(--bg-color);
-      color: var(--text-color);
-      margin: 0;
-      padding: 20px;
-    }
-
-    h2, h3 {
-      text-align: center;
-    }
-
-    .card {
-      background: var(--card-bg);
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-      border: 1px solid var(--border-color);
-      margin: auto;
-      max-width: 700px;
-    }
-
-    input, button {
-      font-family: inherit;
-      padding: 8px;
-      margin: 5px 0;
-      border-radius: 6px;
-      border: 1px solid var(--border-color);
-      background: var(--input-bg);
-      color: var(--text-color);
-      width: 100%;
-      box-sizing: border-box;
-    }
-
-    input[type="file"] {
-      background: transparent;
-      border: none;
-    }
-
-    .person {
-      display: flex;
-      flex-wrap: nowrap;
-      gap: 8px;
-      align-items: center;
-      margin-bottom: 10px;
-    }
-
-    @media (max-width: 600px) {
-      .person {
-        flex-direction: column;
-        align-items: stretch;
-      }
-
-      .person input,
-      .person button {
-        flex: 1 1 100%;
-        width: 100%;
-      }
-
-      .person .jumlah-orang {
-        width: 100%;
-      }
-    }
-
-    .person input {
-      flex: 1;
-    }
-
-    .jumlah-orang {
-      width: 60px;
-    }
-
-    button {
-      cursor: pointer;
-    }
-
-    .actions {
-      text-align: center;
-      margin-top: 20px;
-    }
-
-    #waShare {
-      display: inline-block;
-      background: #25D366;
-      color: white;
-      padding: 8px 16px;
-      text-decoration: none;
-      border-radius: 6px;
-      margin-left: 10px;
-    }
-
-    .theme-toggle {
-      position: fixed;
-      top: 10px;
-      right: 10px;
-      z-index: 10;
-    }
+    body { font-family: sans-serif; padding: 20px; max-width: 700px; margin: auto; }
+    input { margin: 5px 0; padding: 5px; width: 120px; }
+    .person { margin-bottom: 8px; display: flex; align-items: center; gap: 10px; }
+    button { padding: 6px 12px; margin-top: 10px; }
+    hr { margin: 20px 0; }
   </style>
 </head>
 <body>
-  <button class="theme-toggle" onclick="toggleTheme()">🌓</button>
-  <div class="card">
-    <h2>💸 Kalkulator Patungan + Upload Struk OCR</h2>
+  <h2>💸 Kalkulator Patungan + Upload Struk OCR</h2>
 
-    <input type="file" accept="image/*" onchange="prosesStruk(event)">
-    <p><em>Upload gambar struk, dan sistem akan menambahkan item otomatis.</em></p>
+  <input type="file" accept="image/*" onchange="prosesStruk(event)">
+  <p><em>Upload gambar struk, dan sistem akan menambahkan item otomatis.</em></p>
 
-    <div id="people"></div>
-    <button onclick="addPerson()">+ Tambah Item</button>
+  <div id="people"></div>
+  <button onclick="addPerson()">+ Tambah Item</button>
 
-    <hr>
-    <label>Total Bayar Akhir:<br><input type="number" id="finalTotal" autocomplete="off" inputmode="numeric"></label>
-    <div class="actions">
-      <button onclick="hitung()">💰 Hitung Patungan</button>
-      <button onclick="location.reload()">🔄 Reset</button>
-      <a id="waShare" href="#" target="_blank" style="display:none;">📤 Share via WhatsApp</a>
-    </div>
+  <hr>
+  <label>Total Bayar Akhir: <input type="number" id="finalTotal" autocomplete="off" inputmode="numeric"></label><br>
+  <button onclick="hitung()">💰 Hitung Patungan</button>
 
-    <h3>💳 Hasil Patungan:</h3>
-    <div id="result"></div>
-  </div>
+  <h3>💳 Hasil Patungan:</h3>
+  <div id="result"></div>
+  <button onclick="location.reload()">🔄 Reset</button>
+  <a id="waShare" href="#" target="_blank" style="display:none; margin-left: 10px;">📤 Share via WhatsApp</a>
 
   <script>
     const peopleDiv = document.getElementById("people");
@@ -156,7 +41,7 @@
       div.innerHTML = `
         <input type="text" name="menu[]" placeholder="Nama Menu" value="${name}" autocomplete="new-password">
         <input type="number" name="harga[]" placeholder="Harga" value="${price}" autocomplete="new-password">
-        <input type="number" class="jumlah-orang" name="jumlah[]" title="Jumlah orang" min="1" value="${orang}" inputmode="numeric" autocomplete="new-password">
+        <input type="number" class="jumlah-orang" name="jumlah[]" title="Jumlah orang" min="1" value="${orang}" style="width:60px" inputmode="numeric" autocomplete="new-password">
         <button onclick="this.parentElement.remove()">❌</button>
       `;
       peopleDiv.appendChild(div);
@@ -253,12 +138,6 @@
         });
       };
       reader.readAsDataURL(resizedBlob);
-    }
-
-    function toggleTheme() {
-      const html = document.documentElement;
-      const current = html.getAttribute("data-theme");
-      html.setAttribute("data-theme", current === "dark" ? "light" : "dark");
     }
   </script>
 </body>
