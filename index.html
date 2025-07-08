@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Kalkulator Patungan + OCR Struk</title>
-  <script src="https://unpkg.com/tesseract.js@4.0.2/dist/tesseract.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@2/dist/tesseract.min.js"></script>
   <style>
     body { font-family: sans-serif; padding: 20px; max-width: 700px; margin: auto; }
     input { margin: 5px 0; padding: 5px; width: 120px; }
@@ -70,8 +70,7 @@
 
       const totalHarga = itemList.reduce((sum, item) => sum + item.price, 0);
       let totalHitung = 0;
-      let waText = "💳 *Hasil Patungan:*
-";
+      let waText = "💳 *Hasil Patungan:*\n";
 
       itemList.forEach((item, i) => {
         const proporsi = item.price / totalHarga;
@@ -117,23 +116,23 @@
       resultDiv.innerHTML = "<p>🔍 Memproses gambar struk... Harap tunggu.</p>";
 
       const resizedBlob = await resizeImage(file);
-      const worker = await Tesseract.createWorker('eng');
-      await worker.loadLanguage('eng');
-      await worker.initialize('eng');
-      const { data: { text } } = await worker.recognize(resizedBlob);
-      await worker.terminate();
-      console.log("OCR Result:\n", text);
-      resultDiv.innerHTML = "";
+      const reader = new FileReader();
+      reader.onload = async () => {
+        const { data: { text } } = await Tesseract.recognize(reader.result, 'eng');
+        console.log("OCR Result:\n", text);
+        resultDiv.innerHTML = "";
 
-      const lines = text.split('\n').filter(l => /\d/.test(l));
-      lines.forEach(line => {
-        const match = line.match(/(.+?)\s+(\d+[.,]?\d*)$/);
-        if (match) {
-          const name = match[1].trim();
-          const price = parseInt(match[2].replace(/[^\d]/g, ''));
-          if (!isNaN(price)) addPerson(name, price, 1);
-        }
-      });
+        const lines = text.split('\n').filter(l => /\d/.test(l));
+        lines.forEach(line => {
+          const match = line.match(/(.+?)\s+(\d+[.,]?\d*)$/);
+          if (match) {
+            const name = match[1].trim();
+            const price = parseInt(match[2].replace(/[^\d]/g, ''));
+            if (!isNaN(price)) addPerson(name, price, 1);
+          }
+        });
+      };
+      reader.readAsDataURL(resizedBlob);
     }
   </script>
 </body>
