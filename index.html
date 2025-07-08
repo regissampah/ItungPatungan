@@ -39,7 +39,6 @@
       padding: 8px;
       border-radius: 6px;
       border: 1px solid #ccc;
-      width: 100%;
       background: var(--input);
       color: var(--text);
       box-sizing: border-box;
@@ -78,13 +77,26 @@
     }
     @media (max-width: 600px) {
       .person {
-        flex-direction: column;
+        flex-wrap: nowrap;
+        flex-direction: row;
+        align-items: center;
+        gap: 4px;
       }
-      .person input,
-      .person .jumlah-orang,
+      .person input[name="menu[]"] {
+        flex: 2;
+        min-width: 0;
+      }
+      .person input[name="harga[]"] {
+        flex: 1;
+        min-width: 0;
+      }
+      .person input.jumlah-orang {
+        flex: 1;
+        min-width: 0;
+      }
       .person button {
-        width: 100%;
-        max-width: 100%;
+        flex: 0 0 auto;
+        padding: 4px 6px;
       }
     }
   </style>
