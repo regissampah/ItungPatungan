@@ -79,12 +79,38 @@
       resultDiv.innerHTML += `<hr><p><strong>Total Cek:</strong> Rp ${totalHitung.toLocaleString('id-ID')}</p>`;
     }
 
+    function resizeImage(file, maxWidth = 1000) {
+      return new Promise(resolve => {
+        const img = new Image();
+        const reader = new FileReader();
+        reader.onload = e => {
+          img.onload = () => {
+            const canvas = document.createElement("canvas");
+            const scale = Math.min(1, maxWidth / img.width);
+            canvas.width = img.width * scale;
+            canvas.height = img.height * scale;
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            canvas.toBlob(resolve, "image/jpeg", 0.8);
+          };
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
     async function prosesStruk(event) {
       const file = event.target.files[0];
       if (!file) return;
       resultDiv.innerHTML = "<p>🔍 Memproses gambar struk... Harap tunggu.</p>";
+
+      const resizedBlob = await resizeImage(file);
       const worker = await Tesseract.createWorker('eng');
-      const { data: { text } } = await worker.recognize(file);
+      await worker.loadLanguage('eng');
+      await worker.initialize('eng');
+      const { data: { text } } = await worker.recognize(resizedBlob);
+      await worker.terminate();
+      console.log("OCR Result:\n", text);
       resultDiv.innerHTML = "";
 
       const lines = text.split('\n').filter(l => /\d/.test(l));
