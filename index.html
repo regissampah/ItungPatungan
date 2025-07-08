@@ -39,9 +39,9 @@
       const div = document.createElement('div');
       div.className = 'person';
       div.innerHTML = `
-        <input type="text" placeholder="Nama Menu" value="${name}" autocomplete="off">
-        <input type="number" placeholder="Harga" value="${price}" autocomplete="off">
-        <input type="number" class="jumlah-orang" placeholder="Orang" min="1" value="${orang}" style="width:60px" autocomplete="off">
+        <input type="text" placeholder="Nama Menu" value="${name}" autocomplete="off" inputmode="text">
+        <input type="number" placeholder="Harga" value="${price}" autocomplete="off" inputmode="numeric">
+        <input type="number" class="jumlah-orang" title="Jumlah orang" min="1" value="${orang}" style="width:60px" inputmode="numeric">
         <button onclick="this.parentElement.remove()">❌</button>
       `;
       peopleDiv.appendChild(div);
