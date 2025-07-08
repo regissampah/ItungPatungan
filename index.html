@@ -6,82 +6,98 @@
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@2/dist/tesseract.min.js"></script>
   <style>
     body {
-      font-family: 'Segoe UI', sans-serif;
-      margin: 0;
-      padding: 40px;
-      background: linear-gradient(135deg, #dbeafe, #f0f9ff);
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      min-height: 100vh;
-    }
-    .container {
-      background: rgba(255, 255, 255, 0.15);
-      border-radius: 20px;
-      padding: 30px;
-      max-width: 800px;
-      width: 100%;
-      box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.2);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-    }
-    h2, h3 {
-      text-align: center;
-      color: #1e3a8a;
-    }
-    input, button {
-      padding: 10px;
-      border-radius: 10px;
-      border: none;
-      margin: 5px 0;
-    }
-    input {
-      width: 100%;
-      box-sizing: border-box;
-      background: rgba(255, 255, 255, 0.25);
-      color: #111827;
-      font-size: 16px;
-    }
-    input[type="number"] {
-      -moz-appearance: textfield;
-    }
-    input::placeholder {
-      color: #6b7280;
-    }
-    .person {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 10px;
-    }
-    .person input {
-      flex: 1;
-    }
-    .person input.jumlah-orang {
-      flex: 0.3;
-    }
-    button {
-      background-color: #2563eb;
-      color: white;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #1e40af;
-    }
-    #result {
-      margin-top: 20px;
-      background: rgba(255, 255, 255, 0.25);
-      padding: 15px;
-      border-radius: 12px;
-      color: #1f2937;
-    }
-    #waShare {
-      background: #25D366;
-      color: white;
-      padding: 8px 16px;
-      text-decoration: none;
-      border-radius: 10px;
-    }
+  font-family: 'Inter', sans-serif;
+  margin: 0;
+  padding: 40px;
+  background: linear-gradient(135deg, #1e1e2f, #2b2c3d);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 100vh;
+  color: #f1f5f9;
+}
+
+.container {
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 24px;
+  padding: 30px;
+  max-width: 840px;
+  width: 100%;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+h2, h3 {
+  text-align: center;
+  color: #93c5fd;
+}
+
+input, button {
+  font-family: inherit;
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.08);
+  color: #f1f5f9;
+  margin: 5px 0;
+  transition: all 0.2s ease;
+}
+
+input::placeholder {
+  color: #cbd5e1;
+}
+
+input:focus {
+  outline: none;
+  border-color: #60a5fa;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+button {
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+button:hover {
+  background-color: #2563eb;
+}
+
+.person {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.person input {
+  flex: 1;
+}
+
+.person input.jumlah-orang {
+  flex: 0.3;
+}
+
+#result {
+  margin-top: 20px;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 20px;
+  border-radius: 16px;
+  font-size: 16px;
+  color: #e2e8f0;
+}
+
+#waShare {
+  background: #25D366;
+  color: white;
+  padding: 10px 20px;
+  text-decoration: none;
+  border-radius: 10px;
+  font-weight: bold;
+  display: inline-block;
+}
   </style>
 </head>
 <body>
