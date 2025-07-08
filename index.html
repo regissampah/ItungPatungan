@@ -18,14 +18,18 @@
   <button onclick="addPerson()">+ Tambah Item</button>
 
   <hr>
-  <label>Total Bayar Akhir (setelah diskon & biaya): <input type="number" id="finalTotal" value="79201"></label><br>
+  <label>Total Bayar Akhir (setelah diskon & biaya): <input type="number" id="finalTotal"></label><br>
   <button onclick="hitung()">💰 Hitung Patungan</button>
 
   <h3>💳 Hasil Patungan:</h3>
   <div id="result"></div>
+  <button onclick="location.reload()">🔄 Reset</button>
+  <a id="waShare" href="#" target="_blank" style="display:none; margin-left: 10px;">📤 Share via WhatsApp</a>
 
   <script>
     const peopleDiv = document.getElementById("people");
+    const resultDiv = document.getElementById("result");
+    const waShareLink = document.getElementById("waShare");
 
     function addPerson(name = '', price = '', orang = '1') {
       const div = document.createElement('div');
@@ -45,8 +49,13 @@
     function hitung() {
       const people = Array.from(document.querySelectorAll(".person"));
       const totalBayar = parseFloat(document.getElementById("finalTotal").value);
-      const resultDiv = document.getElementById("result");
       resultDiv.innerHTML = "";
+      waShareLink.style.display = "none";
+
+      if (isNaN(totalBayar) || totalBayar <= 0) {
+        alert("Masukkan total bayar yang valid!");
+        return;
+      }
 
       let itemList = [];
       people.forEach(p => {
@@ -60,6 +69,7 @@
 
       const totalHarga = itemList.reduce((sum, item) => sum + item.price, 0);
       let totalHitung = 0;
+      let waText = "💳 *Hasil Patungan:*\n";
 
       itemList.forEach((item, i) => {
         const proporsi = item.price / totalHarga;
@@ -67,10 +77,18 @@
           ? Math.round(totalBayar - totalHitung)
           : Math.round(proporsi * totalBayar);
         totalHitung += bayar;
+
         resultDiv.innerHTML += `<p><strong>${item.name}</strong>: Rp ${bayar.toLocaleString('id-ID')}</p>`;
+        waText += `• ${item.name}: Rp ${bayar.toLocaleString('id-ID')}\n`;
       });
 
       resultDiv.innerHTML += `<hr><p><strong>Total Cek:</strong> Rp ${totalHitung.toLocaleString('id-ID')}</p>`;
+      waText += `\nTotal Cek: Rp ${totalHitung.toLocaleString('id-ID')}`;
+
+      // Share WhatsApp
+      const waURL = "https://wa.me/?text=" + encodeURIComponent(waText);
+      waShareLink.href = waURL;
+      waShareLink.style.display = "inline-block";
     }
   </script>
 </body>
