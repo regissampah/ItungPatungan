@@ -4,26 +4,26 @@
   <meta charset="UTF-8">
   <title>Kalkulator Patungan</title>
   <style>
-    body { font-family: sans-serif; padding: 20px; }
-    input { margin: 5px; padding: 5px; }
+    body { font-family: sans-serif; padding: 20px; max-width: 600px; margin: auto; }
+    input { margin: 5px; padding: 5px; width: 120px; }
     .person { margin-bottom: 10px; }
-    button { padding: 8px 12px; }
+    button { padding: 6px 12px; margin-top: 10px; }
+    hr { margin: 20px 0; }
   </style>
 </head>
 <body>
-  <h2>💸 Kalkulator Patungan dari Struk</h2>
+  <h2>💸 Kalkulator Patungan Otomatis</h2>
 
   <div id="people"></div>
-
   <button onclick="addPerson()">+ Tambah Item</button>
-  <hr>
 
-  <label>Subtotal: <input type="number" id="subtotal" value="97601"></label><br>
-  <label>Tax & Biaya Lain: <input type="number" id="extraFees" value="16873"></label><br>
-  <label>Total Diskon: <input type="number" id="discount" value="26400"></label><br>
+  <hr>
+  <label>Subtotal Barang (tanpa fee/diskon): <input type="number" id="subtotal" value="97601"></label><br>
+  <label>Total Biaya Tambahan (tax, ongkir, dll): <input type="number" id="extraFees" value="16873"></label><br>
+  <label>Total Diskon (semua): <input type="number" id="discount" value="26400"></label><br>
   <button onclick="hitung()">💰 Hitung Patungan</button>
 
-  <h3>💳 Hasil:</h3>
+  <h3>💳 Hasil Patungan:</h3>
   <div id="result"></div>
 
   <script>
@@ -33,14 +33,14 @@
       const div = document.createElement('div');
       div.className = 'person';
       div.innerHTML = `
-        <input type="text" placeholder="Nama" value="${name}">
-        <input type="number" placeholder="Harga" value="${price}">
+        <input type="text" placeholder="Nama Menu" value="${name}">
+        <input type="number" placeholder="Harga (Rp)" value="${price}">
         <button onclick="this.parentElement.remove()">❌</button>
       `;
       peopleDiv.appendChild(div);
     }
 
-    // Preload dari struk
+    // Preload data dari struk
     addPerson("Kopsu Coco", 20900);
     addPerson("Black Tea Machiato", 18900);
     addPerson("Americano", 29901);
@@ -51,7 +51,7 @@
       const subtotal = parseFloat(document.getElementById("subtotal").value);
       const extraFees = parseFloat(document.getElementById("extraFees").value);
       const discount = parseFloat(document.getElementById("discount").value);
-      const totalHarga = subtotal;
+      const totalBayar = subtotal + extraFees - discount;
 
       const resultDiv = document.getElementById("result");
       resultDiv.innerHTML = "";
@@ -64,10 +64,17 @@
         return { name, price };
       });
 
-      data.forEach(p => {
+      let totalHitung = 0;
+      data.forEach((p, i) => {
         const proporsi = p.price / totalProporsi;
-        const biaya = (p.price + proporsi * extraFees - proporsi * discount).toFixed(0);
-        resultDiv.innerHTML += `<p><strong>${p.name}</strong>: Rp ${Number(biaya).toLocaleString('id-ID')}</p>`;
+        let bayar = proporsi * totalBayar;
+        if (i === data.length - 1) {
+          bayar = totalBayar - totalHitung; // Sisanya biar fix total
+        } else {
+          bayar = Math.round(bayar);
+          totalHitung += bayar;
+        }
+        resultDiv.innerHTML += `<p><strong>${p.name}</strong>: Rp ${bayar.toLocaleString('id-ID')}</p>`;
       });
     }
   </script>
