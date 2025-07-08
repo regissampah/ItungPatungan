@@ -129,8 +129,8 @@
             const name = match[1].trim();
             const price = parseInt(match[2].replace(/[^\d]/g, ''));
 
-            // Filter nama seperti "1x", "100x", "2 x", dll
-            if (/^\d+\s*x$/i.test(name) || /^\d+x$/i.test(name) || /^\d+$/.test(name)) return;
+            // Filter nama yang tidak mengandung huruf atau mencurigakan seperti "1x", "x2", "3 x", hanya angka, dll
+            if (!/[a-zA-Z]/.test(name) || /^(\d+\s*x|x\d+|\d+x|x\d+|\d+)$/i.test(name.trim())) return;
 
             if (!isNaN(price)) addPerson(name, price, 1);
           }
