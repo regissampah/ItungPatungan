@@ -28,18 +28,20 @@
   <h3>💳 Hasil Patungan:</h3>
   <div id="result"></div>
   <button onclick="location.reload()">🔄 Reset</button>
+  <a id="waShare" href="#" target="_blank" style="display:none; margin-left: 10px;">📤 Share via WhatsApp</a>
 
   <script>
     const peopleDiv = document.getElementById("people");
     const resultDiv = document.getElementById("result");
+    const waShareLink = document.getElementById("waShare");
 
     function addPerson(name = '', price = '', orang = '1') {
       const div = document.createElement('div');
       div.className = 'person';
       div.innerHTML = `
-        <input type="text" placeholder="Nama Menu" value="${name}">
-        <input type="number" placeholder="Harga" value="${price}">
-        <input type="number" class="jumlah-orang" placeholder="Orang" min="1" value="${orang}" style="width:60px">
+        <input type="text" placeholder="Nama Menu" value="${name}" autocomplete="off">
+        <input type="number" placeholder="Harga" value="${price}" autocomplete="off">
+        <input type="number" class="jumlah-orang" placeholder="Orang" min="1" value="${orang}" style="width:60px" autocomplete="off">
         <button onclick="this.parentElement.remove()">❌</button>
       `;
       peopleDiv.appendChild(div);
@@ -49,6 +51,8 @@
       const people = Array.from(document.querySelectorAll(".person"));
       const totalBayar = parseFloat(document.getElementById("finalTotal").value);
       resultDiv.innerHTML = "";
+      waShareLink.style.display = "none";
+
       if (isNaN(totalBayar) || totalBayar <= 0) {
         alert("Masukkan total bayar yang valid!");
         return;
@@ -66,6 +70,8 @@
 
       const totalHarga = itemList.reduce((sum, item) => sum + item.price, 0);
       let totalHitung = 0;
+      let waText = "💳 *Hasil Patungan:*
+";
 
       itemList.forEach((item, i) => {
         const proporsi = item.price / totalHarga;
@@ -74,9 +80,15 @@
           : Math.round(proporsi * totalBayar);
         totalHitung += bayar;
         resultDiv.innerHTML += `<p><strong>${item.name}</strong>: Rp ${bayar.toLocaleString('id-ID')}</p>`;
+        waText += `• ${item.name}: Rp ${bayar.toLocaleString('id-ID')}\n`;
       });
 
       resultDiv.innerHTML += `<hr><p><strong>Total Cek:</strong> Rp ${totalHitung.toLocaleString('id-ID')}</p>`;
+      waText += `\nTotal Cek: Rp ${totalHitung.toLocaleString('id-ID')}`;
+
+      const waURL = "https://wa.me/?text=" + encodeURIComponent(waText);
+      waShareLink.href = waURL;
+      waShareLink.style.display = "inline-block";
     }
 
     function resizeImage(file, maxWidth = 1000) {
