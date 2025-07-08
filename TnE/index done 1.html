@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Kalkulator Patungan Fix</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; max-width: 600px; margin: auto; }
+    input { margin: 5px; padding: 5px; width: 120px; }
+    .person { margin-bottom: 10px; }
+    button { padding: 6px 12px; margin-top: 10px; }
+    hr { margin: 20px 0; }
+  </style>
+</head>
+<body>
+  <h2>💸 Kalkulator Patungan (Rp79.201 fix)</h2>
+
+  <div id="people"></div>
+  <button onclick="addPerson()">+ Tambah Item</button>
+
+  <hr>
+  <label>Total Bayar Final (setelah diskon & biaya): <input type="number" id="finalTotal" value="79201"></label><br>
+  <button onclick="hitung()">💰 Hitung Patungan</button>
+
+  <h3>💳 Hasil Patungan:</h3>
+  <div id="result"></div>
+
+  <script>
+    const peopleDiv = document.getElementById("people");
+
+    function addPerson(name = '', price = '') {
+      const div = document.createElement('div');
+      div.className = 'person';
+      div.innerHTML = `
+        <input type="text" placeholder="Nama Menu" value="${name}">
+        <input type="number" placeholder="Harga (Rp)" value="${price}">
+        <button onclick="this.parentElement.remove()">❌</button>
+      `;
+      peopleDiv.appendChild(div);
+    }
+
+    // Preload data dari struk
+    addPerson("Kopsu Coco", 20900);
+    addPerson("Black Tea Machiato", 18900);
+    addPerson("Americano", 29901);
+    addPerson("Aero Berrycano", 27900);
+
+    function hitung() {
+      const people = Array.from(document.querySelectorAll(".person"));
+      const totalBayar = parseFloat(document.getElementById("finalTotal").value);
+      const resultDiv = document.getElementById("result");
+      resultDiv.innerHTML = "";
+
+      let totalHarga = 0;
+      const data = people.map(p => {
+        const name = p.querySelector("input[type='text']").value;
+        const price = parseFloat(p.querySelector("input[type='number']").value);
+        totalHarga += price;
+        return { name, price };
+      });
+
+      let totalHitung = 0;
+      data.forEach((p, i) => {
+        const proporsi = p.price / totalHarga;
+        let bayar = (i === data.length - 1)
+          ? Math.round(totalBayar - totalHitung) // biar pas total
+          : Math.round(proporsi * totalBayar);
+        totalHitung += bayar;
+        resultDiv.innerHTML += `<p><strong>${p.name}</strong>: Rp ${bayar.toLocaleString('id-ID')}</p>`;
+      });
+
+      resultDiv.innerHTML += `<hr><p><strong>Total Cek:</strong> Rp ${totalHitung.toLocaleString('id-ID')}</p>`;
+    }
+  </script>
+</body>
+</html>
