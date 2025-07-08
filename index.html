@@ -22,7 +22,7 @@
   <button onclick="addPerson()">+ Tambah Item</button>
 
   <hr>
-  <label>Total Bayar Akhir: <input type="number" id="finalTotal"></label><br>
+  <label>Total Bayar Akhir: <input type="number" id="finalTotal" autocomplete="off" inputmode="numeric"></label><br>
   <button onclick="hitung()">💰 Hitung Patungan</button>
 
   <h3>💳 Hasil Patungan:</h3>
@@ -39,9 +39,9 @@
       const div = document.createElement('div');
       div.className = 'person';
       div.innerHTML = `
-        <input type="text" placeholder="Nama Menu" value="${name}" autocomplete="off" inputmode="text">
-        <input type="number" placeholder="Harga" value="${price}" autocomplete="off" inputmode="numeric">
-        <input type="number" class="jumlah-orang" title="Jumlah orang" min="1" value="${orang}" style="width:60px" inputmode="numeric">
+        <input type="text" name="menu[]" placeholder="Nama Menu" value="${name}" autocomplete="new-password">
+        <input type="number" name="harga[]" placeholder="Harga" value="${price}" autocomplete="new-password">
+        <input type="number" class="jumlah-orang" name="jumlah[]" title="Jumlah orang" min="1" value="${orang}" style="width:60px" inputmode="numeric" autocomplete="new-password">
         <button onclick="this.parentElement.remove()">❌</button>
       `;
       peopleDiv.appendChild(div);
@@ -128,6 +128,10 @@
           if (match) {
             const name = match[1].trim();
             const price = parseInt(match[2].replace(/[^\d]/g, ''));
+
+            // Filter nama seperti "1x", "100x", "2 x", dll
+            if (/^\d+\s*x$/i.test(name) || /^\d+x$/i.test(name) || /^\d+$/.test(name)) return;
+
             if (!isNaN(price)) addPerson(name, price, 1);
           }
         });
