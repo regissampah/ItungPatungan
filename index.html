@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <title>Kalkulator Patungan</title>
+  <title>Kalkulator Patungan Fix</title>
   <style>
     body { font-family: sans-serif; padding: 20px; max-width: 600px; margin: auto; }
     input { margin: 5px; padding: 5px; width: 120px; }
@@ -12,15 +12,13 @@
   </style>
 </head>
 <body>
-  <h2>💸 Kalkulator Patungan Otomatis</h2>
+  <h2>💸 Kalkulator Patungan (Rp79.201 fix)</h2>
 
   <div id="people"></div>
   <button onclick="addPerson()">+ Tambah Item</button>
 
   <hr>
-  <label>Subtotal Barang (tanpa fee/diskon): <input type="number" id="subtotal" value="97601"></label><br>
-  <label>Total Biaya Tambahan (tax, ongkir, dll): <input type="number" id="extraFees" value="16873"></label><br>
-  <label>Total Diskon (semua): <input type="number" id="discount" value="26400"></label><br>
+  <label>Total Bayar Final (setelah diskon & biaya): <input type="number" id="finalTotal" value="79201"></label><br>
   <button onclick="hitung()">💰 Hitung Patungan</button>
 
   <h3>💳 Hasil Patungan:</h3>
@@ -48,34 +46,29 @@
 
     function hitung() {
       const people = Array.from(document.querySelectorAll(".person"));
-      const subtotal = parseFloat(document.getElementById("subtotal").value);
-      const extraFees = parseFloat(document.getElementById("extraFees").value);
-      const discount = parseFloat(document.getElementById("discount").value);
-      const totalBayar = subtotal + extraFees - discount;
-
+      const totalBayar = parseFloat(document.getElementById("finalTotal").value);
       const resultDiv = document.getElementById("result");
       resultDiv.innerHTML = "";
 
-      let totalProporsi = 0;
+      let totalHarga = 0;
       const data = people.map(p => {
         const name = p.querySelector("input[type='text']").value;
         const price = parseFloat(p.querySelector("input[type='number']").value);
-        totalProporsi += price;
+        totalHarga += price;
         return { name, price };
       });
 
       let totalHitung = 0;
       data.forEach((p, i) => {
-        const proporsi = p.price / totalProporsi;
-        let bayar = proporsi * totalBayar;
-        if (i === data.length - 1) {
-          bayar = totalBayar - totalHitung; // Sisanya biar fix total
-        } else {
-          bayar = Math.round(bayar);
-          totalHitung += bayar;
-        }
+        const proporsi = p.price / totalHarga;
+        let bayar = (i === data.length - 1)
+          ? Math.round(totalBayar - totalHitung) // biar pas total
+          : Math.round(proporsi * totalBayar);
+        totalHitung += bayar;
         resultDiv.innerHTML += `<p><strong>${p.name}</strong>: Rp ${bayar.toLocaleString('id-ID')}</p>`;
       });
+
+      resultDiv.innerHTML += `<hr><p><strong>Total Cek:</strong> Rp ${totalHitung.toLocaleString('id-ID')}</p>`;
     }
   </script>
 </body>
