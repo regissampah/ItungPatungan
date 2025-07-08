@@ -5,30 +5,104 @@
   <title>Kalkulator Patungan + OCR Struk</title>
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@2/dist/tesseract.min.js"></script>
   <style>
-    body { font-family: sans-serif; padding: 20px; max-width: 700px; margin: auto; }
-    input { margin: 5px 0; padding: 5px; width: 120px; }
-    .person { margin-bottom: 8px; display: flex; align-items: center; gap: 10px; }
-    button { padding: 6px 12px; margin-top: 10px; }
-    hr { margin: 20px 0; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 40px;
+      background: linear-gradient(135deg, #dbeafe, #f0f9ff);
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+    }
+    .container {
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 20px;
+      padding: 30px;
+      max-width: 800px;
+      width: 100%;
+      box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.2);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    h2, h3 {
+      text-align: center;
+      color: #1e3a8a;
+    }
+    input, button {
+      padding: 10px;
+      border-radius: 10px;
+      border: none;
+      margin: 5px 0;
+    }
+    input {
+      width: 100%;
+      box-sizing: border-box;
+      background: rgba(255, 255, 255, 0.25);
+      color: #111827;
+      font-size: 16px;
+    }
+    input[type="number"] {
+      -moz-appearance: textfield;
+    }
+    input::placeholder {
+      color: #6b7280;
+    }
+    .person {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .person input {
+      flex: 1;
+    }
+    .person input.jumlah-orang {
+      flex: 0.3;
+    }
+    button {
+      background-color: #2563eb;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #1e40af;
+    }
+    #result {
+      margin-top: 20px;
+      background: rgba(255, 255, 255, 0.25);
+      padding: 15px;
+      border-radius: 12px;
+      color: #1f2937;
+    }
+    #waShare {
+      background: #25D366;
+      color: white;
+      padding: 8px 16px;
+      text-decoration: none;
+      border-radius: 10px;
+    }
   </style>
 </head>
 <body>
-  <h2>💸 Kalkulator Patungan + Upload Struk OCR</h2>
+  <div class="container">
+    <h2>💸 Kalkulator Patungan + Upload Struk OCR</h2>
 
-  <input type="file" accept="image/*" onchange="prosesStruk(event)">
-  <p><em>Upload gambar struk, dan sistem akan menambahkan item otomatis.</em></p>
+    <input type="file" accept="image/*" onchange="prosesStruk(event)">
+    <p><em>Upload gambar struk, dan sistem akan menambahkan item otomatis.</em></p>
 
-  <div id="people"></div>
-  <button onclick="addPerson()">+ Tambah Item</button>
+    <div id="people"></div>
+    <button onclick="addPerson()">+ Tambah Item</button>
 
-  <hr>
-  <label>Total Bayar Akhir: <input type="number" id="finalTotal" autocomplete="off" inputmode="numeric"></label><br>
-  <button onclick="hitung()">💰 Hitung Patungan</button>
+    <hr>
+    <label>Total Bayar Akhir: <input type="number" id="finalTotal" autocomplete="off" inputmode="numeric"></label><br>
+    <button onclick="hitung()">💰 Hitung Patungan</button>
 
-  <h3>💳 Hasil Patungan:</h3>
-  <div id="result"></div>
-  <button onclick="location.reload()">🔄 Reset</button>
-  <a id="waShare" href="#" target="_blank" style="display:none; margin-left: 10px;">📤 Share via WhatsApp</a>
+    <h3>💳 Hasil Patungan:</h3>
+    <div id="result"></div>
+    <button onclick="location.reload()">🔄 Reset</button>
+    <a id="waShare" href="#" target="_blank" style="display:none; margin-left: 10px;">📤 Share via WhatsApp</a>
+  </div>
 
   <script>
     const peopleDiv = document.getElementById("people");
@@ -128,13 +202,8 @@
           if (match) {
             let name = match[1].trim();
             const price = parseInt(match[2].replace(/[^\d]/g, ''));
-
-            // Hapus awalan seperti "1x", "2 x", "x3" dari nama
             name = name.replace(/^(\d+\s*[xX]|[xX]\s*\d+)\s*/g, '').trim();
-
-            // Jika setelah dibersihkan nama kosong atau tidak mengandung huruf, skip
             if (!/[a-zA-Z]/.test(name)) return;
-
             if (!isNaN(price)) addPerson(name, price, 1);
           }
         });
