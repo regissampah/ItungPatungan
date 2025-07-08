@@ -64,23 +64,35 @@
 
     .person {
       display: flex;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
       gap: 8px;
       align-items: center;
       margin-bottom: 10px;
     }
 
+    @media (max-width: 600px) {
+      .person {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .person input,
+      .person button {
+        flex: 1 1 100%;
+        width: 100%;
+      }
+
+      .person .jumlah-orang {
+        width: 100%;
+      }
+    }
+
     .person input {
-      flex: 1 1 100%;
+      flex: 1;
     }
 
-    .person .jumlah-orang {
-      width: 80px;
-      flex: 0 0 auto;
-    }
-
-    .person button {
-      flex: 0 0 auto;
+    .jumlah-orang {
+      width: 60px;
     }
 
     button {
@@ -90,9 +102,6 @@
     .actions {
       text-align: center;
       margin-top: 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
     }
 
     #waShare {
@@ -102,6 +111,7 @@
       padding: 8px 16px;
       text-decoration: none;
       border-radius: 6px;
+      margin-left: 10px;
     }
 
     .theme-toggle {
