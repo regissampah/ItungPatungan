@@ -4,12 +4,9 @@
   <meta charset="UTF-8">
   <title>ItungPatungan AI v1</title>
   <link rel="icon" type="image/x-icon" href="KalkulatorPatungan.ico">
-  <!-- Favicon dasar -->
-<link rel="icon" type="image/png" href="/KalkulatorPatungan.ico" />
-
-<!-- Shortcut icon untuk iOS / Android -->
-<link rel="apple-touch-icon" href="/KalkulatorPatungan180.png" />
-<link rel="icon" sizes="180x180" href="/KalkulatorPatungan180.png" />
+  <link rel="icon" type="image/png" href="/KalkulatorPatungan.ico" />
+  <link rel="apple-touch-icon" href="/KalkulatorPatungan180.png" />
+  <link rel="icon" sizes="180x180" href="/KalkulatorPatungan180.png" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
@@ -245,8 +242,10 @@
         ? Math.round(totalInput - totalHitung)
         : Math.round(proporsi * totalInput);
       totalHitung += bayar;
-      hasil += `<p>${item.nama} (x${item.jumlah}): Rp ${bayar.toLocaleString('id-ID')}</p>`;
-      waText += `• ${item.nama} (x${item.jumlah}): Rp ${bayar.toLocaleString('id-ID')}\n`;
+
+      const perOrang = item.jumlah > 1 ? ` → @Rp ${(bayar / item.jumlah).toLocaleString('id-ID')}` : '';
+      hasil += `<p>${item.nama} (x${item.jumlah}): Rp ${bayar.toLocaleString('id-ID')}${perOrang}</p>`;
+      waText += `• ${item.nama} (x${item.jumlah}): Rp ${bayar.toLocaleString('id-ID')}${perOrang}\n`;
     });
 
     hasil += `<hr><p><strong>Total Patungan:</strong> Rp ${totalHitung.toLocaleString('id-ID')}</p>`;
