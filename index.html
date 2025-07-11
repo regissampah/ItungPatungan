@@ -243,7 +243,7 @@
         : Math.round(proporsi * totalInput);
       totalHitung += bayar;
 
-      const perOrang = item.jumlah > 1 ? ` → @Rp ${(bayar / item.jumlah).toLocaleString('id-ID')}` : '';
+      const perOrang = item.jumlah > 1 ? ` → @Rp ${Math.round(bayar / item.jumlah).toLocaleString('id-ID')}` : '';
       hasil += `<p>${item.nama} (x${item.jumlah}): Rp ${bayar.toLocaleString('id-ID')}${perOrang}</p>`;
       waText += `• ${item.nama} (x${item.jumlah}): Rp ${bayar.toLocaleString('id-ID')}${perOrang}\n`;
     });
