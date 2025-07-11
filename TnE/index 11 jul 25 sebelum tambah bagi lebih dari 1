@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>ItungPatungan AI v1</title>
+  <link rel="icon" type="image/x-icon" href="KalkulatorPatungan.ico">
+  <!-- Favicon dasar -->
+<link rel="icon" type="image/png" href="/KalkulatorPatungan.ico" />
+
+<!-- Shortcut icon untuk iOS / Android -->
+<link rel="apple-touch-icon" href="/KalkulatorPatungan180.png" />
+<link rel="icon" sizes="180x180" href="/KalkulatorPatungan180.png" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f9f9f9;
+      padding: 20px;
+    }
+    .container {
+      max-width: 700px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+    }
+    .item {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+      align-items: center;
+    }
+    .item input[type="text"] {
+      flex: 2;
+    }
+    .item input[type="number"] {
+      flex: 1;
+    }
+    .item button.remove {
+      flex: 0 0 auto;
+      background: #e74c3c;
+      color: white;
+      border: none;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 16px;
+      line-height: 1;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    input, button {
+      padding: 8px;
+      margin: 4px 0;
+      font-size: 14px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    #result, #subtotal {
+      margin-top: 20px;
+    }
+    #preview {
+      margin-top: 10px;
+      max-width: 100%;
+      border-radius: 8px;
+    }
+    .actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .action-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .action-buttons > * {
+      flex: 1;
+    }
+    #resetButton, #waShare {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h2>💸 ItungPatungan AI v1 💸</h2>
+  <input type="file" accept="image/*" onchange="uploadToGemini(event)">
+  <img id="preview" src="" alt="Preview Struk" style="display:none;">
+  <div class="actions">
+    <button onclick="tambahItemManual()">➕ Tambah Item Manual</button>
+  </div>
+  <div id="form"></div>
+  <div id="subtotal"></div>
+  <label>Total Bayar:
+    <input type="number" id="totalBayar" oninput="hitungSubtotal()">
+  </label>
+  <button onclick="hitungPatungan()">💰 Hitung Patungan</button>
+  <div id="result"></div>
+  <div class="action-buttons">
+    <button id="resetButton" onclick="resetForm()">🔄 Reset</button>
+    <a id="waShare" href="#" target="_blank" style="background:#25D366;color:#fff;padding:10px;border-radius:6px;text-align:center;text-decoration:none;">📤 Bagikan via WhatsApp</a>
+  </div>
+</div>
+
+<script>
+  async function uploadToGemini(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const preview = document.getElementById("preview");
+    preview.src = URL.createObjectURL(file);
+    preview.style.display = 'block';
+
+    const base64 = await toBase64(file);
+    const geminiPayload = {
+      contents: [{
+        parts: [
+          { inlineData: { mimeType: file.type, data: base64 } },
+          { text: "Dari gambar struk ini, ekstrak hanya daftar item dan harganya. Kembalikan dalam format JSON array murni tanpa teks tambahan. Pastikan harga dalam format ribuan rupiah (contoh: 40500 untuk empat puluh ribu lima ratus). Contoh: [{\"name\":\"Nasi Goreng\",\"price\":15000,\"quantity\":2}]" }
+        ]
+      }]
+    };
+
+    const res = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyCC7Mo1KbGwxvhagbpRBmJghxnFall1ca8", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(geminiPayload)
+    });
+
+    const json = await res.json();
+    console.log("Gemini raw response:", json);
+
+    let text = json?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+    if (!text) {
+      alert("Respon kosong dari Gemini.");
+      return;
+    }
+
+    if (text.startsWith("```")) {
+      text = text.replace(/^```json/, '').replace(/^```/, '').replace(/```$/, '').trim();
+    }
+
+    try {
+      const items = JSON.parse(text);
+      const form = document.getElementById("form");
+      form.innerHTML = '';
+      items.forEach(({name, price, quantity}) => {
+        if (price < 1000) price *= 1000;
+        tambahItem(name, price, quantity || 1);
+      });
+      hitungSubtotal();
+    } catch (e) {
+      console.error("Gagal parsing JSON:", text, e);
+      alert("Gagal parsing hasil Gemini. Lihat console untuk detail.");
+    }
+  }
+
+  function tambahItem(name = '', price = '', quantity = 1) {
+    const form = document.getElementById("form");
+    const row = document.createElement('div');
+    row.className = 'item';
+    row.innerHTML = `
+      <input type="text" value="${name}" class="menu" oninput="hitungSubtotal()">
+      <input type="number" value="${price}" class="harga" oninput="hitungSubtotal()">
+      <input type="number" value="${quantity}" class="jumlah" min="1" title="Jumlah" oninput="hitungSubtotal()">
+      <button class="remove" onclick="this.parentElement.remove(); hitungSubtotal()">×</button>
+    `;
+    form.appendChild(row);
+  }
+
+  function tambahItemManual() {
+    tambahItem('', '', 1);
+  }
+
+  function resetForm() {
+    document.getElementById("form").innerHTML = '';
+    document.getElementById("totalBayar").value = '';
+    document.getElementById("result").innerHTML = '';
+    document.getElementById("subtotal").innerHTML = '';
+    document.getElementById("preview").style.display = 'none';
+    document.getElementById("preview").src = '';
+    document.getElementById("waShare").style.display = 'none';
+    document.getElementById("resetButton").style.display = 'none';
+  }
+
+  function toBase64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result.split(',')[1]);
+      reader.onerror = error => reject(error);
+    });
+  }
+
+  function hitungSubtotal() {
+    const hargaEls = document.querySelectorAll(".harga");
+    const jumlahEls = document.querySelectorAll(".jumlah");
+    let subtotal = 0;
+    hargaEls.forEach((el, i) => {
+      const harga = parseFloat(el.value) || 0;
+      const jumlah = parseInt(jumlahEls[i].value) || 1;
+      subtotal += harga * jumlah;
+    });
+    document.getElementById("subtotal").innerHTML = `<p><strong>Total Harga Item:</strong> Rp ${subtotal.toLocaleString('id-ID')}</p>`;
+  }
+
+  function hitungPatungan() {
+    const hargaEls = document.querySelectorAll(".harga");
+    const menuEls = document.querySelectorAll(".menu");
+    const jumlahEls = document.querySelectorAll(".jumlah");
+    const totalInput = parseFloat(document.getElementById("totalBayar").value);
+    const resultDiv = document.getElementById("result");
+    resultDiv.innerHTML = "";
+
+    if (!totalInput || totalInput <= 0) {
+      resultDiv.innerHTML = "<p style='color:red;'>Masukkan total bayar yang valid!</p>";
+      return;
+    }
+
+    let itemList = [];
+    let totalAsli = 0;
+
+    hargaEls.forEach((el, i) => {
+      const nama = menuEls[i].value || `Item ${i+1}`;
+      const harga = parseFloat(el.value) || 0;
+      const jumlah = parseInt(jumlahEls[i].value) || 1;
+      totalAsli += harga * jumlah;
+      itemList.push({ nama, harga, jumlah });
+    });
+
+    let hasil = "<h3>Hasil Patungan:</h3>";
+    let totalHitung = 0;
+    let waText = "*Hasil Patungan:*\n";
+
+    itemList.forEach((item, i) => {
+      const proporsi = (item.harga * item.jumlah) / totalAsli;
+      const bayar = (i === itemList.length - 1)
+        ? Math.round(totalInput - totalHitung)
+        : Math.round(proporsi * totalInput);
+      totalHitung += bayar;
+      hasil += `<p>${item.nama} (x${item.jumlah}): Rp ${bayar.toLocaleString('id-ID')}</p>`;
+      waText += `• ${item.nama} (x${item.jumlah}): Rp ${bayar.toLocaleString('id-ID')}\n`;
+    });
+
+    hasil += `<hr><p><strong>Total Patungan:</strong> Rp ${totalHitung.toLocaleString('id-ID')}</p>`;
+    waText += `\nTotal Patungan: Rp ${totalHitung.toLocaleString('id-ID')}`;
+
+    resultDiv.innerHTML = hasil;
+    const waLink = document.getElementById("waShare");
+    waLink.href = `https://wa.me/?text=${encodeURIComponent(waText)}`;
+    waLink.style.display = 'inline-block';
+    document.getElementById("resetButton").style.display = 'inline-block';
+  }
+</script>
+</body>
+</html>
