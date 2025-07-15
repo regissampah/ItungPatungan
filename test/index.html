@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>ItungPatungan AI v1</title>
+  <link rel="icon" type="image/x-icon" href="KalkulatorPatungan.ico">
+  <link rel="apple-touch-icon" href="/KalkulatorPatungan180.png" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f9f9f9;
+      padding: 20px;
+    }
+    .container {
+      max-width: 700px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+    }
+    .item {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+      align-items: center;
+    }
+    .item input[type="text"] {
+      flex: 2;
+    }
+    .item input[type="number"] {
+      flex: 1;
+    }
+    .item button.remove {
+      flex: 0 0 auto;
+      background: #e74c3c;
+      color: white;
+      border: none;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 16px;
+      line-height: 1;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    input, button {
+      padding: 8px;
+      margin: 4px 0;
+      font-size: 14px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    #result, #subtotal {
+      margin-top: 20px;
+    }
+    #preview {
+      margin-top: 10px;
+      max-width: 100%;
+      border-radius: 8px;
+    }
+    .actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .action-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .action-buttons > * {
+      flex: 1;
+    }
+    #resetButton, #waShare {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h2>💸 ItungPatungan AI v1 💸</h2>
+  <input type="file" accept="image/*" onchange="uploadToGemini(event)">
+  <img id="preview" src="" alt="Preview Struk" style="display:none;">
+  <div class="actions">
+    <button onclick="tambahItemManual()">➕ Tambah Item Manual</button>
+  </div>
+  <div id="form"></div>
+  <div id="subtotal"></div>
+  <label>Total Bayar:
+    <input type="number" id="totalBayar" oninput="hitungSubtotal()">
+  </label>
+  <button onclick="hitungPatungan()">💰 Hitung Patungan</button>
+  <div id="result"></div>
+  <div class="action-buttons">
+    <button id="resetButton" onclick="resetForm()">🔄 Reset</button>
+    <a id="waShare" href="#" target="_blank" style="background:#25D366;color:#fff;padding:10px;border-radius:6px;text-align:center;text-decoration:none;">📤 Bagikan via WhatsApp</a>
+  </div>
+</div>
+
+<!-- Load script obfuscated -->
+<script src="script-obf.js"></script>
+</body>
+</html>
